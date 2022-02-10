@@ -1,0 +1,10 @@
+.idea
+.vscode
+.DS_Store
+main
+xdago
+go_build_xdago
+*.exe
+*.log
+*.out
+*._*
