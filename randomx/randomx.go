@@ -33,6 +33,10 @@ type Dataset *C.randomx_dataset
 
 type VM *C.randomx_vm
 
+func GetFlags() C.randomx_flags {
+	return C.randomx_get_flags()
+}
+
 func AllocCache(flags ...C.randomx_flags) (Cache, error) {
 	var SumFlag = FlagDefault
 	var cache *C.randomx_cache
