@@ -8,8 +8,8 @@
 #define DATA_SIZE              8 //(sizeof(struct xdag_field) / sizeof(uint32_t))
 #define WORKERNAME_HEADER_WORD 0xf46b9853u
 
-#define DNET_KEY_SIZE	4096
-#define DNET_KEYLEN	((DNET_KEY_SIZE * 2) / (sizeof(dfsrsa_t) * 8))
+#define DNET_KEY_SIZE    4096
+#define DNET_KEYLEN    ((DNET_KEY_SIZE * 2) / (sizeof(dfsrsa_t) * 8))
 
 #define SECTOR_LOG  9
 #define SECTOR_SIZE (1 << SECTOR_LOG)
@@ -18,8 +18,8 @@ struct dnet_key {
     dfsrsa_t key[DNET_KEYLEN];
 };
 
-#define PWDLEN	    64
-#define KEYLEN_MIN	(DNET_KEYLEN / 4)
+#define PWDLEN        64
+#define KEYLEN_MIN    (DNET_KEYLEN / 4)
 
 struct dnet_packet_header {
     uint8_t type;
@@ -52,18 +52,18 @@ extern "C" {
 #endif
 
 extern int cryptStart();
-extern void dfslibEncryptArray(void *data, dfs64 sectorNo);
-extern void dfslibDecryptArray(void *data, dfs64 sectorNo);
+extern void dfslibEncryptArray(void *data, int nField, dfs64 sectorNo);
+extern void dfslibDecryptArray(void *data, int nField, dfs64 sectorNo);
 extern int dnetCryptInit();
-extern int loadDnetKeys(void* keybytes, int length);
+extern int loadDnetKeys(void *keybytes, int length);
 extern int dfslibEncryptByteSector(void *raw, dfs64 sectorNo);
 extern int dfslibDecryptByteSector(void *encrypted, dfs64 sectorNo);
 extern int encryptWalletKey(void *privKey, dfs64 n);
-extern int decryptWalletKey(void  *privKey, dfs64 n);
+extern int decryptWalletKey(void *privKey, dfs64 n);
 extern void dfslibRandomInit();
 extern void crcInit();
-extern int verifyDnetKey( char *pwd, void *key);
-extern void* generalDnetKey(char *pwd, char *random);
+extern int verifyDnetKey(char *pwd, void *key);
+extern void *generalDnetKey(char *pwd, char *random);
 
 #ifdef __cplusplus
 };
