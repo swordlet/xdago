@@ -8,4 +8,4 @@ go_build_xdago
 *.log
 *.out
 *._*
-clib/*.a
+*.a
