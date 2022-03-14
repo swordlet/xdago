@@ -1,17 +1,17 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.5)
 project(xdag_crypto)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_FLAGS "-std=gnu11 -O3 -g -Wall -fpic -Wmissing-prototypes -Wno-unused-result")
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR})
+set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/../)
 
 file(GLOB_RECURSE DAGGER_SOURCES
-        dfstools/*.cpp
+        ./*.cpp
         )
 file(GLOB_RECURSE DAGGER_HEADERS
-        dfstools/*.h
+        ./*.h
         )
 
 

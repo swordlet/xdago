@@ -2,8 +2,8 @@
 #include <cstring>
 #include "wrapper.h"
 //#include <cstdint>
-#include "dfstools/dfslib_random.h"
-#include "dfstools/crc.h"
+#include "dfslib_random.h"
+#include "crc.h"
 
 static int g_keylen = 0;
 static struct xdnet_keys g_test_xkeys;

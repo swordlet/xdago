@@ -1,5 +1,5 @@
-#include "dfstools/dfslib_crypt.h"
-#include "dfstools/dfsrsa.h"
+#include "dfslib_crypt.h"
+#include "dfsrsa.h"
 
 #define SECTOR0_BASE           0x1947f3acu
 #define SECTOR0_OFFSET         0x82e9d1b5u
