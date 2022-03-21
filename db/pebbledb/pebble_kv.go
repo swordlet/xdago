@@ -1,3 +1,5 @@
+//go:build pebble && !rocksdb
+
 package pebbledb
 
 import "xdago/db"
