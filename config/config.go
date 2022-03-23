@@ -77,8 +77,7 @@ func (c *Config) getSetting() {
 		for _, address := range whiteIpArray {
 			_, err := net.ResolveTCPAddr("tcp4", address)
 			if err != nil {
-				log.Error("Parse config white IPs", log.Ctx{"address": address})
-				panic(err)
+				log.Crit("Parse config white IPs", log.Ctx{"address": address})
 			} else {
 				c.whiteIPList = append(c.whiteIPList, address)
 			}
@@ -162,7 +161,7 @@ func TestNetConfig() *Config {
 	c.waitEpoch = 1
 
 	c.xdagEra = 0x16900000000
-	c.SetMainStartAmount(1 << 42)
+	c.mainStartAmount = 1 << 42
 
 	c.apolloForkHeight = 196250
 

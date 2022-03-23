@@ -20,16 +20,16 @@ type IKVSource interface {
 	GetName() string
 	SetName(name string)
 	IsAlive() bool
-	Init() error
+	Init()
 	Close()
 	Reset()
-	Put(K, V []byte) error
-	Get(K []byte) ([]byte, error)
-	Delete(K []byte) error
-	Keys() ([][]byte, error)
-	PrefixKeyLookup(key []byte) ([][]byte, error)
-	FetchPrefix(key []byte, f FetchFunc) error
-	PrefixValueLookup(key []byte) ([][]byte, error)
+	Put(K, V []byte)
+	Get(K []byte) []byte
+	Delete(K []byte)
+	Keys() [][]byte
+	PrefixKeyLookup(key []byte) [][]byte
+	FetchPrefix(key []byte, f FetchFunc)
+	PrefixValueLookup(key []byte) [][]byte
 }
 
 type IDataFactory interface {
