@@ -58,5 +58,5 @@ func (p *PebbleKv) FetchPrefix(key []byte, f db.FetchFunc) {
 }
 
 func (p *PebbleKv) PrefixValueLookup(key []byte) [][]byte {
-	return nil, nil
+	return nil
 }
