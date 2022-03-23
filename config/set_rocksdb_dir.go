@@ -2,7 +2,7 @@
 
 package config
 
-func (c *Config) setDir() {
+func (c *Config) SetDir() {
 	c.storeDir = c.rootDir + "/rocksdb/xdagdb"
 	c.storeBackupDir = c.rootDir + "/rocksdb/xdagdb/backupdata"
 	c.whiteListDir = c.rootDir + "/netdb-white.txt"

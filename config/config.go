@@ -2,8 +2,11 @@ package config
 
 import "C"
 import (
+	"fmt"
 	"github.com/spf13/viper"
 	"net"
+	"strconv"
+	"strings"
 	"xdago/core"
 	"xdago/log"
 )
@@ -33,7 +36,7 @@ func initConfig(rootDir, configName string) *Config {
 	c.SetRootDir(rootDir)
 	c.SetConfigName(configName)
 	c.getSetting()
-	c.setDir()
+	c.SetDir()
 	return c
 }
 
@@ -77,7 +80,7 @@ func (c *Config) getSetting() {
 		for _, address := range whiteIpArray {
 			_, err := net.ResolveTCPAddr("tcp4", address)
 			if err != nil {
-				log.Crit("Parse config white IPs", log.Ctx{"address": address})
+				log.Crit("Parse config white IPs error", log.Ctx{"address": address})
 			} else {
 				c.whiteIPList = append(c.whiteIPList, address)
 			}
@@ -110,6 +113,116 @@ func (c *Config) getSetting() {
 		c.rpcPortWs = v.GetInt("rpc.ws.port")
 	}
 
+}
+
+func (c *Config) ChangePara(args []string) {
+	if args == nil || len(args) == 0 {
+		fmt.Println("Use default configuration")
+		return
+	}
+
+	for i := 0; i < len(args); i++ {
+		switch args[i] {
+		case "-a":
+		case "-c":
+		case "-m":
+		case "-s":
+			i++
+			// TODO: set miner threads count
+			break
+		case "-f":
+			i++
+			c.rootDir = args[i]
+			break
+		case "-p":
+			i++
+			c.changeNode(args[i])
+			break
+		case "-P":
+			i++
+			c.changePoolPara(args[i])
+			break
+		case "-r":
+			// TODO: only load block but not run
+			break
+		case "-tag":
+			i++
+			if len(args[i]) > 32 {
+				c.poolTag = args[i][0:32]
+			} else {
+				c.poolTag = args[i]
+			}
+			break
+		case "-d":
+		case "-t":
+			//only devnet or testnet
+			break
+		default:
+			log.Crit("Illegal instruction", log.Ctx{"para": args[i]})
+		}
+	}
+}
+
+func (c *Config) changeNode(host string) {
+	args := strings.Split(host, ":")
+	if len(args) == 2 {
+		var err error
+		c.nodeIp = args[0]
+		c.nodePort, err = strconv.Atoi(args[1])
+		if err != nil {
+			log.Crit("Illegal node port instruction")
+		}
+	} else {
+		log.Crit("Illegal node host instruction")
+	}
+}
+
+func (c *Config) changePoolPara(para string) {
+	args := strings.Split(para, ":")
+	if len(args) != 9 {
+		log.Crit("Illegal pool instruction")
+	}
+	var err error
+	c.poolIp = args[0]
+	c.poolPort, err = strconv.Atoi(args[1])
+	if err != nil {
+		log.Crit("Illegal pool port instruction")
+	}
+
+	c.globalMinerChannelLimit, err = strconv.Atoi(args[2])
+	if err != nil {
+		log.Crit("Illegal pool miner limit instruction")
+	}
+
+	c.maxConnectPerIp, err = strconv.Atoi(args[3])
+	if err != nil {
+		log.Crit("Illegal pool connect limit instruction")
+	}
+
+	c.maxMinerPerAccount, err = strconv.Atoi(args[4])
+	if err != nil {
+		log.Crit("Illegal miner account limit instruction")
+	}
+
+	c.poolRation, err = strconv.ParseFloat(args[5], 64)
+	if err != nil {
+		log.Crit("Illegal pool ration instruction")
+	}
+
+	c.rewardRation, err = strconv.ParseFloat(args[6], 64)
+	if err != nil {
+		log.Crit("Illegal reward ration instruction")
+	}
+
+	c.directRation, err = strconv.ParseFloat(args[7], 64)
+	if err != nil {
+		log.Crit("Illegal direct ration instruction")
+	}
+
+	c.fundRation, err = strconv.ParseFloat(args[8], 64)
+	if err != nil {
+		log.Crit("Illegal fund ration instruction")
+	}
 }
 
 func MainNetConfig() *Config {
