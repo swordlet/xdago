@@ -4,42 +4,44 @@ package rocksdb
 
 import (
 	"strconv"
-	"sync"
 	"xdago/config"
 	"xdago/db"
 )
 
-type RocksdbFactory struct {
-	databases sync.Map
+type KvStoreFactory struct {
+	databases map[db.DatabaseName]interface{}
 	config    *config.Config
 }
 
-func NewRocksdbFactory(config *config.Config) RocksdbFactory {
-	return RocksdbFactory{
-		config: config,
+func NewKvStoreFactory(config *config.Config) KvStoreFactory {
+	return KvStoreFactory{
+		config:    config,
+		databases: make(map[db.DatabaseName]interface{}),
 	}
 }
 
-func (r *RocksdbFactory) GetDB(name db.DatabaseName) *db.IKVSource {
+func (r *KvStoreFactory) GetDB(name db.DatabaseName) *db.IKVSource {
 
-	dataSource, _ := r.databases.LoadOrStore(name, func() *RocksKv {
-		var kv *RocksKv
+	dataSource, ok := r.databases[name]
+	if !ok {
+		var kv interface{}
 		if name == db.TIME {
 			kv = NewRocksKv(strconv.Itoa(int(name)), 10)
 		} else {
 			kv = NewRocksKv(strconv.Itoa(int(name)), 0)
 		}
-		kv.SetConfig(r.config)
-		return kv
-	}())
+		kv.(*RocksKv).SetConfig(r.config)
+		r.databases[name] = kv
+		return kv.(*db.IKVSource)
+	}
+
 	return dataSource.(*db.IKVSource)
 }
 
-func (r *RocksdbFactory) Close() {
-	r.databases.Range(func(key, value interface{}) bool {
+func (r *KvStoreFactory) Close() {
+	for key, value := range r.databases {
 		kv := value.(*RocksKv)
 		kv.Close()
-		r.databases.Delete(key)
-		return true
-	})
+		delete(r.databases, key)
+	}
 }

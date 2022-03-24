@@ -4,42 +4,44 @@ package pebbledb
 
 import (
 	"strconv"
-	"sync"
 	"xdago/config"
 	"xdago/db"
 )
 
-type PebbleFactory struct {
-	databases sync.Map
+type KvStoreFactory struct {
+	databases map[db.DatabaseName]interface{}
 	config    *config.Config
 }
 
-func NewPebbleFactory(config *config.Config) PebbleFactory {
-	return PebbleFactory{
-		config: config,
+func NewKvStoreFactory(config *config.Config) KvStoreFactory {
+	return KvStoreFactory{
+		config:    config,
+		databases: make(map[db.DatabaseName]interface{}),
 	}
 }
 
-func (r *PebbleFactory) GetDB(name db.DatabaseName) *db.IKVSource {
+func (r *KvStoreFactory) GetDB(name db.DatabaseName) *db.IKVSource {
 
-	dataSource, _ := r.databases.LoadOrStore(name, func() *PebbleKv {
-		var kv *PebbleKv
+	dataSource, ok := r.databases[name]
+	if !ok {
+		var kv interface{}
 		if name == db.TIME {
 			kv = NewPebbleKv(strconv.Itoa(int(name)), 10)
 		} else {
 			kv = NewPebbleKv(strconv.Itoa(int(name)), 0)
 		}
-		kv.SetConfig(r.config)
-		return kv
-	}())
+		kv.(*PebbleKv).SetConfig(r.config)
+		r.databases[name] = kv
+		return kv.(*db.IKVSource)
+	}
+
 	return dataSource.(*db.IKVSource)
 }
 
-func (r *PebbleFactory) Close() {
-	r.databases.Range(func(key, value interface{}) bool {
+func (r *KvStoreFactory) Close() {
+	for key, value := range r.databases {
 		kv := value.(*PebbleKv)
 		kv.Close()
-		r.databases.Delete(key)
-		return true
-	})
+		delete(r.databases, key)
+	}
 }
