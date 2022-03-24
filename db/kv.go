@@ -33,6 +33,6 @@ type IKVSource interface {
 }
 
 type IDataFactory interface {
-	GetDB(name DatabaseName) IKVSource
+	GetDB(name DatabaseName) *IKVSource
 	Close()
 }
