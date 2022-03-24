@@ -90,7 +90,7 @@ func (p *RocksKv) Init() {
 	p.readOpt.SetPrefixSameAsStart(true)
 	p.readOpt.SetVerifyChecksums(false)
 
-	log.Info("Opening db", log.Ctx{"dbname": p.name})
+	log.Info("Opening db", log.Ctx{"db name": p.name})
 	dbPath := p.getPath()
 	dir := path.Dir(dbPath)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
@@ -104,7 +104,7 @@ func (p *RocksKv) Init() {
 		}
 		// TODO: open backup db
 	}
-	log.Debug("Open existing db or create new db ", log.Ctx{"dbname": p.name})
+	log.Debug("Open existing db or create new db ", log.Ctx{"db name": p.name})
 	var err error
 	p.db, err = grocksdb.OpenDb(options, dbPath)
 	if err != nil {
