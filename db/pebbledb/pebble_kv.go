@@ -13,6 +13,7 @@ import (
 	"xdago/config"
 	"xdago/db"
 	"xdago/log"
+	"xdago/utils"
 )
 
 type PebbleKv struct {
@@ -30,7 +31,7 @@ func (p *PebbleKv) SetConfig(config *config.Config) {
 }
 
 func NewPebbleKv(name string, preSeekLen int) *PebbleKv {
-	log.Debug("New db", log.Ctx{"db name": name})
+	log.Debug("New db", log.Ctx{"dbname": name})
 	return &PebbleKv{
 		name:             name,
 		prefixSeekLength: preSeekLen,
@@ -53,10 +54,10 @@ func (p *PebbleKv) Close() {
 	if !p.alive {
 		return
 	}
-	log.Debug("Close db", log.Ctx{"db name": p.name})
+	log.Debug("Close db", log.Ctx{"dbname": p.name})
 	err := p.db.Close()
 	if err != nil {
-		log.Crit("Failed close db", log.Ctx{"db name": p.name, "err": err})
+		log.Crit("Failed close db", log.Ctx{"dbname": p.name, "err": err})
 	}
 	p.alive = false
 }
@@ -65,7 +66,7 @@ func (p *PebbleKv) Init() {
 	p.Lock()
 	defer p.Unlock()
 
-	log.Debug("~> PebbleKVSource.init()", log.Ctx{"db name": p.name})
+	log.Debug("~> PebbleKVSource.init()", log.Ctx{"dbname": p.name})
 	if p.alive {
 		return
 	}
@@ -117,22 +118,22 @@ func (p *PebbleKv) Init() {
 	//	opts.EventListener.WALDeleted = nil
 	//}
 	var err error
-	log.Info("Opening db", log.Ctx{"db name": p.name})
+	log.Info("Opening db", log.Ctx{"dbname": p.name})
 	dbPath := p.getPath()
 	dir := path.Dir(dbPath)
 	if _, err = os.Stat(dir); os.IsNotExist(err) {
-		if err = os.Mkdir(dir, 0666); err != nil {
+		if err = os.MkdirAll(dir, 0666); err != nil {
 			panic(err)
 		}
 	}
-	log.Debug("Open existing db or create new db ", log.Ctx{"db name": p.name})
-	p.db, err = pebble.Open(dir, opts)
+	log.Debug("Open existing db or create new db ", log.Ctx{"dbname": p.name})
+	p.db, err = pebble.Open(dbPath, opts)
 	if err != nil {
-		log.Crit("Failed to open db", log.Ctx{"db name": p.name, "err": err.Error()})
+		log.Crit("Failed to open db", log.Ctx{"dbname": p.name, "err": err.Error()})
 	}
 	p.alive = true
 
-	log.Debug("<~ PebbleKVSource.init()", log.Ctx{"db name": p.name})
+	log.Debug("<~ PebbleKVSource.init()", log.Ctx{"dbname": p.name})
 }
 
 func (p *PebbleKv) Reset() {
@@ -150,10 +151,10 @@ func (p *PebbleKv) IsAlive() bool {
 
 func (p *PebbleKv) Put(key, val []byte) {
 	p.RLock()
-	defer p.Unlock()
+	defer p.RUnlock()
 
 	log.Trace("~> PebbleKVSource.put():",
-		log.Ctx{"db name": p.name, "key": hex.EncodeToString(key), "val": len(val)})
+		log.Ctx{"dbname": p.name, "key": hex.EncodeToString(key), "val": len(val)})
 	var err error
 	if val != nil {
 		if p.db == nil {
@@ -165,18 +166,18 @@ func (p *PebbleKv) Put(key, val []byte) {
 		err = p.db.Delete(key, p.writeOpt)
 	}
 	if err != nil {
-		log.Crit("Failed to put into db", log.Ctx{"db name": p.name, "err": err.Error()})
+		log.Crit("Failed to put into db", log.Ctx{"dbname": p.name, "err": err.Error()})
 	}
 	log.Trace("<~ PebbleKVSource.put():",
-		log.Ctx{"db name": p.name, "key": hex.EncodeToString(key), "val": len(val)})
+		log.Ctx{"dbname": p.name, "key": hex.EncodeToString(key), "val": len(val)})
 }
 
 func (p *PebbleKv) Get(key []byte) []byte {
 	p.RLock()
-	defer p.Unlock()
+	defer p.RUnlock()
 
 	log.Trace("~> PebbleKVSource.get():",
-		log.Ctx{"db name": p.name, "key": hex.EncodeToString(key)})
+		log.Ctx{"dbname": p.name, "key": hex.EncodeToString(key)})
 
 	ret, closer, err := p.db.Get(key)
 	if closer != nil {
@@ -189,60 +190,60 @@ func (p *PebbleKv) Get(key []byte) []byte {
 		return nil
 	}
 	if err != nil {
-		log.Crit("Failed to get from db", log.Ctx{"db name": p.name, "err": err.Error()})
+		log.Crit("Failed to get from db", log.Ctx{"dbname": p.name, "err": err.Error()})
 	}
 
 	log.Trace("<~ PebbleKVSource.get():",
-		log.Ctx{"db name": p.name, "key": hex.EncodeToString(key), "val": len(ret)})
+		log.Ctx{"dbname": p.name, "key": hex.EncodeToString(key), "val": len(ret)})
 
 	return ret
 }
 
 func (p *PebbleKv) Delete(key []byte) {
 	p.RLock()
-	defer p.Unlock()
+	defer p.RUnlock()
 
 	log.Trace("~> PebbleKVSource.delete():",
-		log.Ctx{"db name": p.name, "key": hex.EncodeToString(key)})
+		log.Ctx{"dbname": p.name, "key": hex.EncodeToString(key)})
 	err := p.db.Delete(key, p.writeOpt)
 	if err != nil {
-		log.Crit("Failed to delete from db", log.Ctx{"db name": p.name, "err": err.Error()})
+		log.Crit("Failed to delete from db", log.Ctx{"dbname": p.name, "err": err.Error()})
 	}
 
 	log.Trace("<~ PebbleKVSource.delete():",
-		log.Ctx{"db name": p.name, "key": hex.EncodeToString(key)})
+		log.Ctx{"dbname": p.name, "key": hex.EncodeToString(key)})
 }
 
 func (p *PebbleKv) Keys() [][]byte {
 	p.RLock()
-	defer p.Unlock()
+	defer p.RUnlock()
 
-	log.Trace("~> PebbleKVSource.keys():", log.Ctx{"db name": p.name})
+	log.Trace("~> PebbleKVSource.keys():", log.Ctx{"dbname": p.name})
 	var keys [][]byte
 	iter := p.db.NewIter(nil)
 	for iter.First(); iter.Valid(); iter.Next() {
 		keys = append(keys, iter.Key())
 	}
 	if err := iter.Close(); err != nil {
-		log.Crit("Failed to close iterator", log.Ctx{"db name": p.name, "err": err.Error()})
+		log.Crit("Failed to close iterator", log.Ctx{"dbname": p.name, "err": err.Error()})
 	}
 
-	log.Trace("<~ PebbleKVSource.keys():", log.Ctx{"db name": p.name})
+	log.Trace("<~ PebbleKVSource.keys():", log.Ctx{"dbname": p.name})
 	return keys
 }
 
 func (p *PebbleKv) FetchPrefix(key []byte, f db.FetchFunc) {
 	p.RLock()
-	defer p.Unlock()
+	defer p.RUnlock()
 
 	iter := p.db.NewIter(prefixIterOptions(key))
 	for iter.First(); iter.Valid(); iter.Next() {
-		if f(iter.Key(), iter.Value()) {
+		if f(utils.Copy2(iter.Key()), utils.Copy2(iter.Value())) {
 			break
 		}
 	}
 	if err := iter.Close(); err != nil {
-		log.Crit("Failed to close prefix iterator", log.Ctx{"db name": p.name, "err": err.Error()})
+		log.Crit("Failed to close prefix iterator", log.Ctx{"dbname": p.name, "err": err.Error()})
 	}
 }
 
