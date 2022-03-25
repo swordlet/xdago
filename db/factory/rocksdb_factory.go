@@ -1,11 +1,12 @@
-//go:build pebble && !rocksdb
+//go:build rocksdb && !pebble
 
-package pebbledb
+package factory
 
 import (
 	"strconv"
 	"xdago/config"
 	"xdago/db"
+	"xdago/db/rocksdb"
 )
 
 type KvStoreFactory struct {
@@ -20,27 +21,27 @@ func NewKvStoreFactory(config *config.Config) KvStoreFactory {
 	}
 }
 
-func (r *KvStoreFactory) GetDB(name db.DatabaseName) *db.IKVSource {
+func (r *KvStoreFactory) GetDB(name db.DatabaseName) db.IKVSource {
 
 	dataSource, ok := r.databases[name]
 	if !ok {
 		var kv interface{}
 		if name == db.TIME {
-			kv = NewPebbleKv(strconv.Itoa(int(name)), 10)
+			kv = rocksdb.NewRocksKv(strconv.Itoa(int(name)), 10)
 		} else {
-			kv = NewPebbleKv(strconv.Itoa(int(name)), 0)
+			kv = rocksdb.NewRocksKv(strconv.Itoa(int(name)), 0)
 		}
-		kv.(*PebbleKv).SetConfig(r.config)
+		kv.(*rocksdb.RocksKv).SetConfig(r.config)
 		r.databases[name] = kv
-		return kv.(*db.IKVSource)
+		return kv.(db.IKVSource)
 	}
 
-	return dataSource.(*db.IKVSource)
+	return dataSource.(db.IKVSource)
 }
 
 func (r *KvStoreFactory) Close() {
 	for key, value := range r.databases {
-		kv := value.(*PebbleKv)
+		kv := value.(*rocksdb.RocksKv)
 		kv.Close()
 		delete(r.databases, key)
 	}

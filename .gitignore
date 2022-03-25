@@ -9,3 +9,9 @@ go_build_xdago
 *.out
 *._*
 *.a
+*.test
+logs
+dist
+devnet
+mainnet
+testnet

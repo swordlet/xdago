@@ -12,3 +12,23 @@ func KeyStartWith(source, prefix []byte) bool {
 	}
 	return true
 }
+
+func MergeBytes(array ...[]byte) []byte {
+	var total int
+	for _, arr := range array {
+		total += len(arr)
+	}
+	res := make([]byte, total)
+	var length int
+	for _, arr := range array {
+		copy(res[length:], arr[:])
+		length += len(arr)
+	}
+	return res
+}
+
+func Copy2(src []byte) []byte {
+	dst := make([]byte, len(src))
+	copy(dst, src)
+	return dst
+}
