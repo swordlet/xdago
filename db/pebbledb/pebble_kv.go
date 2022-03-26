@@ -236,7 +236,7 @@ func (p *PebbleKv) FetchPrefix(key []byte, f db.FetchFunc) {
 	p.RLock()
 	defer p.RUnlock()
 
-	iter := p.db.NewIter(prefixIterOptions(key))
+	iter := p.db.NewIter(prefixIterOptions(key[0:p.prefixSeekLength])) // 8 or 9 ?
 	for iter.First(); iter.Valid(); iter.Next() {
 		if f(utils.Copy2(iter.Key()), utils.Copy2(iter.Value())) {
 			break

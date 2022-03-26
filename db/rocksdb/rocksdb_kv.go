@@ -70,7 +70,7 @@ func (p *RocksKv) Init() {
 		log.Crit("no name set to db")
 	}
 	options := grocksdb.NewDefaultOptions()
-	options.SetCreateIfMissingColumnFamilies(true)
+	options.SetCreateIfMissing(true)
 	options.SetCompression(grocksdb.LZ4Compression)
 	options.SetBottommostCompression(grocksdb.LZ4HCCompression)
 	options.SetLevelCompactionDynamicLevelBytes(true)
@@ -196,7 +196,7 @@ func (p *RocksKv) Keys() [][]byte {
 
 	log.Trace("~> RocksdbKVSource.keys():", log.Ctx{"dbname": p.name})
 	var keys [][]byte
-	iter := p.db.NewIterator(p.readOpt)
+	iter := p.db.NewIterator(grocksdb.NewDefaultReadOptions())
 	for iter.SeekToFirst(); iter.Valid(); iter.Next() {
 		keys = append(keys, iter.Key().Data())
 	}

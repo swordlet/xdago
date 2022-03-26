@@ -1,5 +1,7 @@
 //go:build pebble && !rocksdb
 
+//conditional build
+
 package config
 
 func (c *Config) SetDir() {

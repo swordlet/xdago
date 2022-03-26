@@ -1,7 +1,8 @@
 //go:build pebble && !rocksdb
 
 ////go:build rocksdb && !pebble
-//switch for KV store
+
+//conditional build switch for KV store
 
 package factory
 
@@ -92,5 +93,4 @@ func TestPrefix(t *testing.T) {
 	assert.Equal(t, len(values), 2)
 
 	timeSource.Close()
-
 }
