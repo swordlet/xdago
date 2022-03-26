@@ -1,7 +1,7 @@
 //go:build pebble && !rocksdb
 
 ////go:build rocksdb && !pebble
-//switch for KV store
+//conditional build switch for KV store
 
 package config
 

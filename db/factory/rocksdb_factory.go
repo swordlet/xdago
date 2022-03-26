@@ -27,7 +27,7 @@ func (r *KvStoreFactory) GetDB(name db.DatabaseName) db.IKVSource {
 	if !ok {
 		var kv interface{}
 		if name == db.TIME {
-			kv = rocksdb.NewRocksKv(strconv.Itoa(int(name)), 10)
+			kv = rocksdb.NewRocksKv(strconv.Itoa(int(name)), 8)
 		} else {
 			kv = rocksdb.NewRocksKv(strconv.Itoa(int(name)), 0)
 		}
