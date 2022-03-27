@@ -27,7 +27,7 @@ func (r *KvStoreFactory) GetDB(name db.DatabaseName) db.IKVSource {
 	if !ok {
 		var kv interface{}
 		if name == db.TIME {
-			kv = pebbledb.NewPebbleKv(strconv.Itoa(int(name)), 8)
+			kv = pebbledb.NewPebbleKv(strconv.Itoa(int(name)), 9)
 		} else {
 			kv = pebbledb.NewPebbleKv(strconv.Itoa(int(name)), 0)
 		}
