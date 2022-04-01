@@ -1,0 +1,8 @@
+package core
+
+const (
+	XDAG_BLOCK_FIELDS = 16
+	XDAG_BLOCK_SIZE   = 512
+	XDAG_FIELD_SIZE   = 32
+	XDAG_HASH_SIZE    = 32
+)

@@ -1,5 +1,7 @@
 package core
 
+import "encoding/binary"
+
 type FieldType byte
 
 const (
@@ -26,3 +28,19 @@ const (
 	XDAG_FIELD_RESERVE5
 	XDAG_FIELD_RESERVE6
 )
+
+var EmptyHashOrField [XDAG_FIELD_SIZE]byte
+
+type XdagField struct {
+	Data [XDAG_FIELD_SIZE]byte
+	Sum  uint64
+	Type FieldType
+}
+
+func (x XdagField) GetSum() uint64 {
+	x.Sum = 0
+	for i := 0; i < 4; i++ {
+		x.Sum += binary.LittleEndian.Uint64(x.Data[i*8 : (i+1)*8])
+	}
+	return x.Sum
+}

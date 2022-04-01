@@ -6,6 +6,7 @@ require (
 	github.com/cockroachdb/pebble v0.0.0-20220322040433-6164579cf2cb
 	github.com/go-stack/stack v1.8.1
 	github.com/linxGnu/grocksdb v1.6.48
+	github.com/magiconair/properties v1.8.5
 	github.com/spf13/viper v1.10.1
 )
 
@@ -24,7 +25,6 @@ require (
 	github.com/klauspost/compress v1.11.7 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/kr/text v0.1.0 // indirect
-	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
