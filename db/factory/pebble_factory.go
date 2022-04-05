@@ -4,29 +4,30 @@ package factory
 
 import (
 	"strconv"
+	"xdago/common"
 	"xdago/config"
 	"xdago/db"
 	"xdago/db/pebbledb"
 )
 
 type KvStoreFactory struct {
-	databases map[db.DatabaseName]interface{}
+	databases map[common.DatabaseName]interface{}
 	config    *config.Config
 }
 
 func NewKvStoreFactory(config *config.Config) KvStoreFactory {
 	return KvStoreFactory{
 		config:    config,
-		databases: make(map[db.DatabaseName]interface{}),
+		databases: make(map[common.DatabaseName]interface{}),
 	}
 }
 
-func (r *KvStoreFactory) GetDB(name db.DatabaseName) db.IKVSource {
+func (r *KvStoreFactory) GetDB(name common.DatabaseName) db.IKVSource {
 
 	dataSource, ok := r.databases[name]
 	if !ok {
 		var kv interface{}
-		if name == db.TIME {
+		if name == common.DB_TIME {
 			kv = pebbledb.NewPebbleKv(strconv.Itoa(int(name)), 9)
 		} else {
 			kv = pebbledb.NewPebbleKv(strconv.Itoa(int(name)), 0)

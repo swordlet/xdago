@@ -4,23 +4,11 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
+	"xdago/common"
 	"xdago/core"
 	"xdago/db"
 	"xdago/log"
 	"xdago/utils"
-)
-
-const (
-	SETTING_STATS      byte = 0x10
-	TIME_HASH_INFO     byte = 0x20
-	HASH_BLOCK_INFO    byte = 0x30
-	SUMS_BLOCK_INFO    byte = 0x40
-	OURS_BLOCK_INFO    byte = 0x50
-	SETTING_TOP_STATUS byte = 0x60
-	SNAPSHOT_BOOT      byte = 0x70
-	BLOCK_HEIGHT       byte = 0x80
-	SNAPSHOT_PRESEED   byte = 0x90
-	SUM_FILE_NAME           = "sums.dat"
 )
 
 type BlockStore struct {
@@ -61,12 +49,12 @@ func GetTimeKey(timestamp uint64, hashLow []byte) []byte {
 	var b [8]byte
 	binary.BigEndian.PutUint64(b[:], t)
 	if hashLow == nil {
-		return utils.MergeBytes([]byte{TIME_HASH_INFO}, b[:])
+		return utils.MergeBytes([]byte{common.TIME_HASH_INFO}, b[:])
 	} else {
-		if len(hashLow) != core.XDAG_HASH_SIZE {
+		if len(hashLow) != common.XDAG_HASH_SIZE {
 			log.Crit("hashlow size error", log.Ctx{"len": len(hashLow)})
 		}
-		return utils.MergeBytes([]byte{TIME_HASH_INFO}, b[:], hashLow)
+		return utils.MergeBytes([]byte{common.TIME_HASH_INFO}, b[:], hashLow)
 	}
 }
 
@@ -126,14 +114,14 @@ func (bs *BlockStore) GetRawBlockByHash(hashLow []byte) core.Block {
 }
 
 func (bs *BlockStore) GetBlockInfoByHash(hashLow []byte) core.Block {
-	if len(hashLow) != core.XDAG_HASH_SIZE {
+	if len(hashLow) != common.XDAG_HASH_SIZE {
 		log.Crit("hashlow size error", log.Ctx{"len": len(hashLow)})
 	}
 	if !bs.HasBlockInfo(hashLow) {
 		return core.Block{}
 	}
 	var info core.BlockInfo
-	value := bs.indexSource.Get(utils.MergeBytes([]byte{HASH_BLOCK_INFO}, hashLow))
+	value := bs.indexSource.Get(utils.MergeBytes([]byte{common.HASH_BLOCK_INFO}, hashLow))
 	if value == nil {
 		return core.Block{}
 	}
@@ -150,5 +138,5 @@ func (bs *BlockStore) HasBlock(hashLow []byte) bool {
 }
 
 func (bs *BlockStore) HasBlockInfo(hashLow []byte) bool {
-	return nil != bs.indexSource.Get(utils.MergeBytes([]byte{HASH_BLOCK_INFO}, hashLow))
+	return nil != bs.indexSource.Get(utils.MergeBytes([]byte{common.HASH_BLOCK_INFO}, hashLow))
 }

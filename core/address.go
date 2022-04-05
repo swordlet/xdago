@@ -3,13 +3,14 @@ package core
 import (
 	"encoding/binary"
 	"encoding/hex"
+	"xdago/common"
 	"xdago/log"
 )
 
 type Address struct {
-	Data    [XDAG_FIELD_SIZE]byte
-	HashLow [XDAG_HASH_SIZE]byte
-	Type    FieldType
+	Data    [common.XDAG_FIELD_SIZE]byte
+	HashLow [common.XDAG_HASH_SIZE]byte
+	Type    common.FieldType
 	Amount  uint64
 	Parsed  bool
 }
@@ -24,14 +25,14 @@ func AddressFromField(field XdagField) Address {
 }
 
 // AddressFromHashLow 只用于ref 跟 maxdifflink
-func AddressFromHashLow(hashLow []byte) Address {
-	if len(hashLow) != XDAG_HASH_SIZE {
-		log.Crit("hashlow size error", log.Ctx{"len": len(hashLow)})
+func AddressFromHashLow(hashLow [32]byte) Address {
+	if hashLow == common.EmptyHashOrField {
+		log.Crit("address from zero hash low")
 	}
 	adr := Address{
 		Parsed: true,
 	}
-	copy(adr.HashLow[:], hashLow)
+	adr.HashLow = hashLow
 	return adr
 }
 
@@ -40,31 +41,31 @@ func AddressFromBlock(block Block) Address {
 	adr := Address{
 		Parsed: true,
 	}
-	copy(adr.HashLow[:], block.GetHashLow())
+	adr.HashLow = block.GetHashLow()
 	return adr
 }
-func AddressFromType(data []byte, typ FieldType) Address {
-	if len(data) != XDAG_FIELD_SIZE {
-		log.Crit("address from type, data size error", log.Ctx{"len": len(data)})
+func AddressFromType(data [32]byte, typ common.FieldType) Address {
+	if data == common.EmptyHashOrField {
+		log.Crit("address from type, zero hash low")
 	}
 	adr := Address{
 		Type: typ,
 	}
-	copy(adr.Data[:], data)
+	adr.Data = data
 	adr.Parse()
 	return adr
 }
 
-func AddressFromAmount(hashLow []byte, typ FieldType, amount uint64) Address {
-	if len(hashLow) != XDAG_HASH_SIZE {
-		log.Crit("hashlow size error", log.Ctx{"len": len(hashLow)})
+func AddressFromAmount(hashLow [32]byte, typ common.FieldType, amount uint64) Address {
+	if hashLow == common.EmptyHashOrField {
+		log.Crit("address from amount, zero hash low")
 	}
 	adr := Address{
 		Type:   typ,
 		Amount: amount,
 		Parsed: true,
 	}
-	copy(adr.HashLow[:], hashLow)
+	adr.HashLow = hashLow
 	return adr
 }
 
@@ -77,7 +78,7 @@ func (adr *Address) Parse() {
 }
 
 func (adr *Address) GetData() []byte {
-	if adr.Data == EmptyHashOrField {
+	if adr.Data == common.EmptyHashOrField {
 		binary.LittleEndian.PutUint64(adr.Data[24:], adr.Amount)
 		copy(adr.Data[0:24], adr.HashLow[8:])
 	}

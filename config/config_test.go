@@ -15,7 +15,7 @@ import (
 	"xdago/utils"
 )
 
-func init() {
+func testInit() {
 	_, filename, _, _ := runtime.Caller(0)
 	dir := path.Join(path.Dir(filename), "..")
 	err := os.Chdir(dir)
@@ -27,6 +27,7 @@ func init() {
 }
 
 func TestTestNetConfig(t *testing.T) {
+	testInit()
 	c := TestNetConfig()
 
 	assert.Equal(t, c.RootDir(), "testnet")

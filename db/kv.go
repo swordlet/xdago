@@ -1,18 +1,6 @@
 package db
 
-type DatabaseName int
-
-const (
-	INDEX DatabaseName = iota // Block index
-
-	BLOCK // Block raw data.
-
-	TIME // Time related block.
-
-	ORPHANIND // Orphan block index
-
-	SNAPSHOT
-)
+import "xdago/common"
 
 type FetchFunc func([]byte, []byte) bool
 
@@ -33,6 +21,6 @@ type IKVSource interface {
 }
 
 type IDataFactory interface {
-	GetDB(name DatabaseName) *IKVSource
+	GetDB(name common.DatabaseName) *IKVSource
 	Close()
 }

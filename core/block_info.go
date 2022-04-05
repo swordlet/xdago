@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"math/big"
 	"strconv"
+	"xdago/common"
 	"xdago/snapshot"
 	"xdago/utils"
 )
@@ -16,9 +17,9 @@ type BlockInfo struct {
 	Ref         []byte
 	MaxDiffLink []byte
 	Fee         uint64
-	Remark      [XDAG_FIELD_SIZE]byte
-	Hash        [XDAG_HASH_SIZE]byte
-	HashLow     [XDAG_HASH_SIZE]byte
+	Remark      [common.XDAG_FIELD_SIZE]byte
+	Hash        [common.XDAG_HASH_SIZE]byte
+	HashLow     [common.XDAG_HASH_SIZE]byte
 	Amount      uint64
 	Timestamp   uint64
 	IsSnapshot  bool
