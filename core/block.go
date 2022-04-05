@@ -28,7 +28,7 @@ type Block struct {
 	Nonce               [common.XDAG_FIELD_SIZE]byte //主块的nonce记录矿工地址跟nonce
 	tempLength          int
 	PreTopCandidate     bool
-	PreTopCandidateDiff big.Int
+	PreTopCandidateDiff *big.Int
 	//IsOurs            bool
 	//encoded           []byte
 }

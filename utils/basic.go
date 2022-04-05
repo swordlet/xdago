@@ -42,3 +42,17 @@ func Type2String(i uint64) string {
 	}
 	return s
 }
+
+func MaxUint64(x, y uint64) uint64 {
+	if x < y {
+		return y
+	}
+	return x
+}
+
+func MaxInt(x, y int) int {
+	if x < y {
+		return y
+	}
+	return x
+}
