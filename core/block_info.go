@@ -13,7 +13,7 @@ type BlockInfo struct {
 	Type        uint64
 	Flags       int
 	Height      uint64
-	Difficulty  big.Int
+	Difficulty  *big.Int
 	Ref         []byte
 	MaxDiffLink []byte
 	Fee         uint64
