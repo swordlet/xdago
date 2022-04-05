@@ -8,38 +8,19 @@ package store
 
 import (
 	"encoding/hex"
-	"os"
-	"path"
-	"runtime"
 	"testing"
-	"xdago/config"
+	"xdago/common"
 	"xdago/crypto"
-	"xdago/db"
 	"xdago/db/factory"
-	"xdago/log"
 )
 
-var c *config.Config
-
-func init() {
-	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "../../")
-	err := os.Chdir(dir)
-	if err != nil {
-		panic(err)
-	}
-
-	c = config.DevNetConfig()
-	h := log.CallerFileHandler(log.StdoutHandler)
-	log.Root().SetHandler(h)
-}
-
 func TestGetBlocksUsedTime(t *testing.T) {
-	kvFactory := factory.NewKvStoreFactory(c)
+	cfg := testInit()
+	kvFactory := factory.NewKvStoreFactory(cfg)
 
-	indexSource := kvFactory.GetDB(db.INDEX)
-	timeSource := kvFactory.GetDB(db.TIME)
-	blockSource := kvFactory.GetDB(db.BLOCK)
+	indexSource := kvFactory.GetDB(common.DB_INDEX)
+	timeSource := kvFactory.GetDB(common.DB_TIME)
+	blockSource := kvFactory.GetDB(common.DB_BLOCK)
 
 	bs := NewBlockStore(indexSource, timeSource, blockSource)
 

@@ -4,7 +4,7 @@
 
 //conditional build switch for KV store
 
-package factory
+package store
 
 import (
 	"encoding/hex"
@@ -13,17 +13,16 @@ import (
 	"path"
 	"runtime"
 	"testing"
+	"xdago/common"
 	"xdago/config"
 	"xdago/crypto"
-	"xdago/db"
-	"xdago/db/store"
+	"xdago/db/factory"
 	"xdago/log"
 )
 
 // CGO_LDFLAGS=-lrocksdb -lstdc++ -lm -lz -lsnappy -llz4 -lzstd
-var c *config.Config
 
-func init() {
+func testInit() *config.Config {
 	_, filename, _, _ := runtime.Caller(0)
 	dir := path.Join(path.Dir(filename), "../../")
 	err := os.Chdir(dir)
@@ -31,18 +30,19 @@ func init() {
 		panic(err)
 	}
 
-	c = config.DevNetConfig()
+	cfg := config.DevNetConfig()
 	h := log.CallerFileHandler(log.StdoutHandler)
 	log.Root().SetHandler(h)
+	return cfg
 }
 
 func TestKv(t *testing.T) {
+	cfg := testInit()
+	kvFactory := factory.NewKvStoreFactory(cfg)
 
-	kvFactory := NewKvStoreFactory(c)
-
-	blockSource := kvFactory.GetDB(db.BLOCK)
-	indexSource := kvFactory.GetDB(db.INDEX)
-	orphanSource := kvFactory.GetDB(db.ORPHANIND)
+	blockSource := kvFactory.GetDB(common.DB_BLOCK)
+	indexSource := kvFactory.GetDB(common.DB_INDEX)
+	orphanSource := kvFactory.GetDB(common.DB_ORPHANIND)
 
 	blockSource.Reset()
 	indexSource.Reset()
@@ -65,8 +65,9 @@ func TestKv(t *testing.T) {
 }
 
 func TestPrefix(t *testing.T) {
-	kvFactory := NewKvStoreFactory(c)
-	timeSource := kvFactory.GetDB(db.TIME)
+	cfg := testInit()
+	kvFactory := factory.NewKvStoreFactory(cfg)
+	timeSource := kvFactory.GetDB(common.DB_TIME)
 	timeSource.Reset()
 
 	hashlow1 := crypto.HashTwice([]byte("1"))
@@ -76,8 +77,8 @@ func TestPrefix(t *testing.T) {
 	value1, _ := hex.DecodeString("1234")
 	value2, _ := hex.DecodeString("2345")
 
-	key1 := store.GetTimeKey(time1, hashlow1[:])
-	key2 := store.GetTimeKey(time1, hashlow2[:])
+	key1 := GetTimeKey(time1, hashlow1[:])
+	key2 := GetTimeKey(time1, hashlow2[:])
 
 	timeSource.Put(key1, value1)
 	timeSource.Put(key2, value2)
@@ -86,7 +87,7 @@ func TestPrefix(t *testing.T) {
 	assert.Equal(t, len(all), 2)
 
 	var search uint64 = 1602226304712
-	key := store.GetTimeKey(search, nil)
+	key := GetTimeKey(search, nil)
 	keys := timeSource.PrefixKeyLookup(key)
 	assert.Equal(t, len(keys), 2)
 	values := timeSource.PrefixValueLookup(key)

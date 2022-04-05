@@ -6,7 +6,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
-	"xdago/core"
+	"xdago/common"
 	"xdago/log"
 )
 
@@ -234,12 +234,12 @@ func MainNetConfig() *Config {
 
 	c.apolloForkHeight = 1017323
 	c.apolloForkAmount = 1 << 39
-	c.xdagFieldHeader = core.XDAG_FIELD_HEAD
+	c.xdagFieldHeader = common.XDAG_FIELD_HEAD
 
 	c.dnetKeyFile = c.rootDir + "/dnet_keys.bin"
 	c.walletKeyFile = c.rootDir + "/wallet.dat"
 
-	c.walletFilePath = c.rootDir + "/wallet/" + WALLET_FILE_NAME
+	c.walletFilePath = c.rootDir + "/wallet/" + common.WALLET_FILE_NAME
 
 	return c
 }
@@ -255,12 +255,12 @@ func DevNetConfig() *Config {
 
 	c.apolloForkHeight = 1000
 	c.apolloForkAmount = 1 << 39
-	c.xdagFieldHeader = core.XDAG_FIELD_HEAD_TEST
+	c.xdagFieldHeader = common.XDAG_FIELD_HEAD_TEST
 
 	c.dnetKeyFile = c.rootDir + "/dnet_keys.bin"
 	c.walletKeyFile = c.rootDir + "/wallet-testnet.dat"
 
-	c.walletFilePath = c.rootDir + "/wallet/" + WALLET_FILE_NAME
+	c.walletFilePath = c.rootDir + "/wallet/" + common.WALLET_FILE_NAME
 
 	return c
 }
@@ -278,12 +278,12 @@ func TestNetConfig() *Config {
 	c.apolloForkHeight = 196250
 
 	c.apolloForkAmount = 1 << 39
-	c.xdagFieldHeader = core.XDAG_FIELD_HEAD_TEST
+	c.xdagFieldHeader = common.XDAG_FIELD_HEAD_TEST
 
 	c.dnetKeyFile = c.rootDir + "/dnet_keys.bin"
 	c.walletKeyFile = c.rootDir + "/wallet-testnet.dat"
 
-	c.walletFilePath = c.rootDir + "/wallet/" + WALLET_FILE_NAME
+	c.walletFilePath = c.rootDir + "/wallet/" + common.WALLET_FILE_NAME
 
 	return c
 }

@@ -1,6 +1,8 @@
 package config
 
-import "xdago/core"
+import (
+	"xdago/common"
+)
 
 type Config struct {
 	configName string
@@ -68,7 +70,7 @@ type Config struct {
 
 	// Xdag spec
 	xdagEra          uint64
-	xdagFieldHeader  core.FieldType
+	xdagFieldHeader  common.FieldType
 	mainStartAmount  uint64
 	apolloForkHeight uint64
 	apolloForkAmount uint64
@@ -457,11 +459,11 @@ func (c *Config) SetXdagEra(xdagEra uint64) {
 	c.xdagEra = xdagEra
 }
 
-func (c *Config) XdagFieldHeader() core.FieldType {
+func (c *Config) XdagFieldHeader() common.FieldType {
 	return c.xdagFieldHeader
 }
 
-func (c *Config) SetXdagFieldHeader(xdagFieldHeader core.FieldType) {
+func (c *Config) SetXdagFieldHeader(xdagFieldHeader common.FieldType) {
 	c.xdagFieldHeader = xdagFieldHeader
 }
 

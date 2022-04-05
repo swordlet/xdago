@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"encoding/binary"
+	"fmt"
 	"math"
 	"unicode"
 )
@@ -20,4 +22,23 @@ func IsAsciiPrintable(s string) bool {
 		}
 	}
 	return true
+}
+
+func Hash2String(h [32]byte) string {
+	return fmt.Sprintf("%016x%016x%016x%016x",
+		binary.LittleEndian.Uint64(h[24:]),
+		binary.LittleEndian.Uint64(h[16:24]),
+		binary.LittleEndian.Uint64(h[8:16]),
+		binary.LittleEndian.Uint64(h[:8]))
+}
+
+func Type2String(i uint64) string {
+	var b [8]byte
+	binary.LittleEndian.PutUint64(b[:], i)
+	var s string
+	for _, k := range b {
+		s += fmt.Sprintf("%x", k&0x0f)
+		s += fmt.Sprintf("%x", (k>>4)&0x0f)
+	}
+	return s
 }

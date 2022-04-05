@@ -1,4 +1,4 @@
-package config
+package common
 
 const (
 	MAIN_CHAIN_PERIOD uint64 = 64 << 10
