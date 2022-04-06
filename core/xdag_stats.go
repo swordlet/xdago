@@ -24,10 +24,17 @@ type XDAGStats struct {
 	OurLastBlockHash []byte
 }
 
-func NewXDAGStats(maxDifficulty *big.Int, totalNBlocks, totalNMain, mainTime uint64,
-	totalNHosts int) XDAGStats {
+func NewEmptyXDAGStats() *XDAGStats {
+	return &XDAGStats{
+		Difficulty:    big.NewInt(0),
+		MaxDifficulty: big.NewInt(0),
+	}
+}
 
-	return XDAGStats{
+func NewXDAGStats(maxDifficulty *big.Int, totalNBlocks, totalNMain, mainTime uint64,
+	totalNHosts int) *XDAGStats {
+
+	return &XDAGStats{
 		MaxDifficulty: maxDifficulty,
 		TotalNBlocks:  totalNBlocks,
 		TotalNMain:    totalNMain,

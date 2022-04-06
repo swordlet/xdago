@@ -8,8 +8,8 @@ import (
 )
 
 type Address struct {
-	Data    [common.XDAG_FIELD_SIZE]byte
-	HashLow [common.XDAG_HASH_SIZE]byte
+	Data    common.Field
+	HashLow common.Hash
 	Type    common.FieldType
 	Amount  uint64
 	Parsed  bool
@@ -26,7 +26,7 @@ func AddressFromField(field XdagField) Address {
 
 // AddressFromHashLow 只用于ref 跟 maxdifflink
 func AddressFromHashLow(hashLow [32]byte) Address {
-	if hashLow == common.EmptyHashOrField {
+	if hashLow == common.EmptyHash {
 		log.Crit("address from zero hash low")
 	}
 	adr := Address{
@@ -45,7 +45,7 @@ func AddressFromBlock(block Block) Address {
 	return adr
 }
 func AddressFromType(data [32]byte, typ common.FieldType) Address {
-	if data == common.EmptyHashOrField {
+	if data == common.EmptyField {
 		log.Crit("address from type, zero hash low")
 	}
 	adr := Address{
@@ -57,7 +57,7 @@ func AddressFromType(data [32]byte, typ common.FieldType) Address {
 }
 
 func AddressFromAmount(hashLow [32]byte, typ common.FieldType, amount uint64) Address {
-	if hashLow == common.EmptyHashOrField {
+	if hashLow == common.EmptyHash {
 		log.Crit("address from amount, zero hash low")
 	}
 	adr := Address{
@@ -78,7 +78,7 @@ func (adr *Address) Parse() {
 }
 
 func (adr *Address) GetData() []byte {
-	if adr.Data == common.EmptyHashOrField {
+	if adr.Data == common.EmptyField {
 		binary.LittleEndian.PutUint64(adr.Data[24:], adr.Amount)
 		copy(adr.Data[0:24], adr.HashLow[8:])
 	}

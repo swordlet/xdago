@@ -24,8 +24,8 @@ type Block struct {
 	Outputs             []Address                            //ouput包含pretop
 	PubKeys             []secp256k1.PublicKey                //记录公钥
 	InSigs              [][common.XDAG_FIELD_SIZE*2 + 1]byte // last byte is signature field index in block
-	OutSig              [common.XDAG_FIELD_SIZE * 2]byte
-	Nonce               [common.XDAG_FIELD_SIZE]byte //主块的nonce记录矿工地址跟nonce
+	OutSig              common.Signature
+	Nonce               common.Field //主块的nonce记录矿工地址跟nonce
 	tempLength          int
 	PreTopCandidate     bool
 	PreTopCandidateDiff *big.Int
@@ -133,22 +133,22 @@ func NewBlockFromXdag(b *XdagBlock) Block {
 	return block
 }
 
-func (b *Block) GetHashLow() [common.XDAG_HASH_SIZE]byte {
-	if b.info.HashLow == common.EmptyHashOrField {
+func (b *Block) GetHashLow() common.Hash {
+	if b.info.HashLow == common.EmptyHash {
 		h := b.GetHash()
 		copy(b.info.HashLow[8:], h[8:])
 	}
 	return b.info.HashLow
 }
 
-func (b *Block) GetHash() [common.XDAG_HASH_SIZE]byte {
-	if b.info.Hash == common.EmptyHashOrField {
+func (b *Block) GetHash() common.Hash {
+	if b.info.Hash == common.EmptyHash {
 		b.info.Hash = b.calcHash()
 	}
 	return b.info.Hash
 }
 
-func (b *Block) calcHash() [common.XDAG_HASH_SIZE]byte {
+func (b *Block) calcHash() common.Hash {
 	if b.xdagBlock == nil {
 		b.xdagBlock = NewXdagBlock(b.ToBytes())
 	}
@@ -156,7 +156,7 @@ func (b *Block) calcHash() [common.XDAG_HASH_SIZE]byte {
 }
 
 //RecalcHash 重计算 避免矿工挖矿发送share时直接更新 hash
-func (b *Block) RecalcHash() [common.XDAG_HASH_SIZE]byte {
+func (b *Block) RecalcHash() common.Hash {
 	b.xdagBlock = NewXdagBlock(b.ToBytes())
 	return crypto.HashTwice(b.xdagBlock.Data[:])
 }
@@ -185,7 +185,7 @@ func (b *Block) ToBytes() []byte {
 
 	res := common.XDAG_BLOCK_FIELDS - 1 - length
 	for i := 0; i < res; i++ {
-		w.WriteBytes(common.EmptyHashOrField[:])
+		w.WriteBytes(common.EmptyField[:])
 	}
 	w.WriteBytes(b.Nonce[:])
 	if w.Error() != nil {
@@ -202,7 +202,7 @@ func (b Block) getEncodedBody() *BlockWriter {
 	for _, link := range all {
 		w.WriteBytes(link.GetData())
 	}
-	if b.info.Remark != common.EmptyHashOrField {
+	if b.info.Remark != common.EmptyField {
 		w.WriteBytes(b.info.Remark[:])
 	}
 	for _, publicKey := range b.PubKeys {
@@ -351,8 +351,8 @@ func (b *Block) setType(typ common.FieldType, n int) {
 }
 
 // GetSubRawData 根据length获取前length个字段的数据 主要用于签名
-func (b Block) GetSubRawData(length int) [common.XDAG_BLOCK_SIZE]byte {
-	var res [common.XDAG_BLOCK_SIZE]byte
+func (b Block) GetSubRawData(length int) common.RawBlock {
+	var res common.RawBlock
 	copy(res[:length*common.XDAG_FIELD_SIZE], b.xdagBlock.Data[:length*common.XDAG_FIELD_SIZE])
 	typ := binary.LittleEndian.Uint64(b.xdagBlock.Data[8:16])
 	for i := length; i < common.XDAG_BLOCK_FIELDS; i++ {

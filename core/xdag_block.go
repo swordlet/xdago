@@ -7,7 +7,7 @@ import (
 )
 
 type XdagBlock struct {
-	Data   [common.XDAG_BLOCK_SIZE]byte
+	Data   common.RawBlock
 	Sum    uint64
 	Fields [common.XDAG_BLOCK_FIELDS]XdagField
 }
@@ -33,7 +33,7 @@ func (xb XdagBlock) getMsgCode(n int) common.FieldType {
 	return common.FieldType((t >> (n << 2)) & 0x0f)
 }
 
-func (xb *XdagBlock) GetData() [common.XDAG_BLOCK_SIZE]byte {
+func (xb *XdagBlock) GetData() common.RawBlock {
 	if xb.Data == common.EmptyXdagBlock {
 		xb.Sum = 0
 		for i := 0; i < common.XDAG_BLOCK_FIELDS; i++ {
