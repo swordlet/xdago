@@ -71,7 +71,7 @@ func printBlockInfo(block *Block) {
 		fmt.Println("in sign r:", hex.EncodeToString(sig[:32]))
 		fmt.Println("in sign s:", hex.EncodeToString(sig[32:64]))
 	}
-	if block.Nonce != common.EmptyHashOrField {
+	if block.Nonce != common.EmptyField {
 		fmt.Println("nonce:", hex.EncodeToString(block.Nonce[:]))
 	}
 	fmt.Println("xdag block:")

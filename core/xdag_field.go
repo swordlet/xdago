@@ -6,7 +6,7 @@ import (
 )
 
 type XdagField struct {
-	Data [common.XDAG_FIELD_SIZE]byte
+	Data common.Field
 	Sum  uint64
 	Type common.FieldType
 }

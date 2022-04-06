@@ -17,9 +17,9 @@ type BlockInfo struct {
 	Ref         []byte
 	MaxDiffLink []byte
 	Fee         uint64
-	Remark      [common.XDAG_FIELD_SIZE]byte
-	Hash        [common.XDAG_HASH_SIZE]byte
-	HashLow     [common.XDAG_HASH_SIZE]byte
+	Remark      common.Field
+	Hash        common.Hash
+	HashLow     common.Hash
 	Amount      uint64
 	Timestamp   uint64
 	IsSnapshot  bool

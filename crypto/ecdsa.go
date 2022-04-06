@@ -7,7 +7,7 @@ import (
 	"xdago/secp256k1/ecdsa"
 )
 
-func EcdsaSign(key *secp256k1.PrivateKey, hash []byte) (r, s [common.XDAG_FIELD_SIZE]byte) {
+func EcdsaSign(key *secp256k1.PrivateKey, hash []byte) (r, s common.Field) {
 	signature := ecdsa.Sign(key, hash)
 	serial := signature.Serialize()
 	rLen := int(serial[3])
