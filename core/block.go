@@ -195,8 +195,8 @@ func (b *Block) ToBytes() []byte {
 }
 
 // block bytes without signature
-func (b Block) getEncodedBody() *BlockWriter {
-	w := NewBlockWriter(common.XDAG_BLOCK_SIZE)
+func (b Block) getEncodedBody() *utils.SimpleWriter {
+	w := utils.NewSimpleWriter(common.XDAG_BLOCK_SIZE)
 	w.WriteBytes(b.getEncodedHeader())
 	all := append(b.Inputs, b.Outputs...)
 	for _, link := range all {

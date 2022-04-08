@@ -8,10 +8,16 @@ require (
 	github.com/linxGnu/grocksdb v1.6.48
 	github.com/magiconair/properties v1.8.5
 	github.com/spf13/viper v1.10.1
+	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15
+	github.com/tyler-smith/go-bip32 v1.0.0
+	github.com/tyler-smith/go-bip39 v1.1.0
+	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 )
 
 require (
 	github.com/DataDog/zstd v1.4.5 // indirect
+	github.com/FactomProject/basen v0.0.0-20150613233007-fe3947df716e // indirect
+	github.com/FactomProject/btcutilecc v0.0.0-20130527213604-d3a63a5752ec // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cockroachdb/errors v1.8.1 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20190617123548-eb05cc24525f // indirect
