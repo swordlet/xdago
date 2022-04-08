@@ -1,4 +1,4 @@
-package core
+package utils
 
 import (
 	"bytes"
@@ -48,20 +48,20 @@ func (e *OpError) Op() string {
 	return e.op
 }
 
-type BlockWriter struct {
+type SimpleWriter struct {
 	wb  *bytes.Buffer
 	err *OpError
 }
 
-func NewBlockWriter(initSize int) *BlockWriter {
+func NewSimpleWriter(initSize int) *SimpleWriter {
 	buf := make([]byte, 0, initSize)
-	return &BlockWriter{
+	return &SimpleWriter{
 		wb: bytes.NewBuffer(buf),
 	}
 }
 
 // Error return the inner err.
-func (w *BlockWriter) Error() error {
+func (w *SimpleWriter) Error() error {
 	if w.err != nil {
 		return w.err
 	}
@@ -69,7 +69,7 @@ func (w *BlockWriter) Error() error {
 }
 
 // Length return the inner length.
-func (w *BlockWriter) Length() int {
+func (w *SimpleWriter) Length() int {
 	return w.wb.Len()
 }
 
@@ -77,7 +77,7 @@ func (w *BlockWriter) Length() int {
 // If the caller changes the contents of the
 // returned slice, the contents of the buffer will change provided there
 // are no intervening method calls on the Buffer.
-func (w *BlockWriter) Bytes() ([]byte, error) {
+func (w *SimpleWriter) Bytes() ([]byte, error) {
 	if w.err != nil {
 		return nil, w.err
 	}
@@ -86,14 +86,14 @@ func (w *BlockWriter) Bytes() ([]byte, error) {
 }
 
 // BytesUncheck must check error first
-func (w *BlockWriter) BytesUncheck() []byte {
+func (w *SimpleWriter) BytesUncheck() []byte {
 	length := w.wb.Len()
 	return (w.wb.Bytes())[:length]
 }
 
 // WriteByte appends the byte of b to the inner buffer, growing the buffer as
 // needed.
-func (w *BlockWriter) WriteOneByte(b byte) {
+func (w *SimpleWriter) WriteOneByte(b byte) {
 	if w.err != nil {
 		return
 	}
@@ -101,14 +101,14 @@ func (w *BlockWriter) WriteOneByte(b byte) {
 	err := w.wb.WriteByte(b)
 	if err != nil {
 		w.err = NewOpError(err,
-			fmt.Sprintf("BlockWriter.WriteByte writes: %x", b))
+			fmt.Sprintf("SimpleWriter.WriteByte writes: %x", b))
 		return
 	}
 }
 
 // WriteFixedSizeString writes a string to buffer, if the length of s is less than size,
 // Pad binary zero to the left bytes.
-func (w *BlockWriter) WriteFixedSizeString(s string, size int) {
+func (w *SimpleWriter) WriteFixedSizeString(s string, size int) {
 	if w.err != nil {
 		return
 	}
@@ -121,7 +121,7 @@ func (w *BlockWriter) WriteFixedSizeString(s string, size int) {
 
 	if l1 > size {
 		w.err = NewOpError(ErrMethodParamsInvalid,
-			fmt.Sprintf("BlockWriter.WriteFixedSizeString writes: %s", s[0:l2]))
+			fmt.Sprintf("SimpleWriter.WriteFixedSizeString writes: %s", s[0:l2]))
 		return
 	}
 
@@ -130,7 +130,7 @@ func (w *BlockWriter) WriteFixedSizeString(s string, size int) {
 
 // WriteString appends the contents of s to the inner buffer, growing the buffer as
 // needed.
-func (w *BlockWriter) WriteString(s string) {
+func (w *SimpleWriter) WriteString(s string) {
 	if w.err != nil {
 		return
 	}
@@ -144,20 +144,20 @@ func (w *BlockWriter) WriteString(s string) {
 	n, err := w.wb.WriteString(s)
 	if err != nil {
 		w.err = NewOpError(err,
-			fmt.Sprintf("BlockWriter.WriteString writes: %s", s[0:l2]))
+			fmt.Sprintf("SimpleWriter.WriteString writes: %s", s[0:l2]))
 		return
 	}
 
 	if n != l1 {
 		w.err = NewOpError(fmt.Errorf("WriteString writes %d bytes, not equal to %d we expected", n, l1),
-			fmt.Sprintf("BlockWriter.WriteString writes: %s", s[0:l2]))
+			fmt.Sprintf("SimpleWriter.WriteString writes: %s", s[0:l2]))
 		return
 	}
 }
 
 // WriteInt appends the content of data to the inner buffer in order, growing the buffer as
 // needed.
-func (w *BlockWriter) WriteInt(order binary.ByteOrder, data interface{}) {
+func (w *SimpleWriter) WriteInt(order binary.ByteOrder, data interface{}) {
 	if w.err != nil {
 		return
 	}
@@ -165,14 +165,14 @@ func (w *BlockWriter) WriteInt(order binary.ByteOrder, data interface{}) {
 	err := binary.Write(w.wb, order, data)
 	if err != nil {
 		w.err = NewOpError(err,
-			fmt.Sprintf("BlockWriter.WriteInt writes: %#v", data))
+			fmt.Sprintf("SimpleWriter.WriteInt writes: %#v", data))
 		return
 	}
 }
 
 // WriteBytes appends the content of data to the inner buffer in order, growing the buffer as
 // needed.
-func (w *BlockWriter) WriteBytes(data []byte) {
+func (w *SimpleWriter) WriteBytes(data []byte) {
 	if w.err != nil {
 		return
 	}
@@ -186,31 +186,31 @@ func (w *BlockWriter) WriteBytes(data []byte) {
 	n, err := w.wb.Write(data)
 	if err != nil {
 		w.err = NewOpError(err,
-			fmt.Sprintf("BlockWriter.Write Byte writes: %#v", data[0:l2]))
+			fmt.Sprintf("SimpleWriter.Write Byte writes: %#v", data[0:l2]))
 		return
 	}
 	if n != l1 {
 		w.err = NewOpError(fmt.Errorf("WriteBytes writes %d bytes, not equal to %d we expected", n, l1),
-			fmt.Sprintf("BlockWriter.WriteBytes writes: %#v", data[0:l2]))
+			fmt.Sprintf("SimpleWriter.WriteBytes writes: %#v", data[0:l2]))
 		return
 	}
 }
 
-type BlockReader struct {
+type SimpleReader struct {
 	rb   *bytes.Buffer
 	err  *OpError
 	cBuf [maxCStringSize]byte
 }
 
-func NewBlockReader(data []byte) *BlockReader {
-	return &BlockReader{
+func NewSimpleReader(data []byte) *SimpleReader {
+	return &SimpleReader{
 		rb: bytes.NewBuffer(data),
 	}
 }
 
 // ReadByte reads and returns the next byte from the inner buffer.
 // If no byte is available, it returns an OpError.
-func (r *BlockReader) ReadOneByte() byte {
+func (r *SimpleReader) ReadOneByte() byte {
 	if r.err != nil {
 		return 0
 	}
@@ -218,7 +218,7 @@ func (r *BlockReader) ReadOneByte() byte {
 	b, err := r.rb.ReadByte()
 	if err != nil {
 		r.err = NewOpError(err,
-			"BlockReader.ReadByte")
+			"SimpleReader.ReadByte")
 		return 0
 	}
 	return b
@@ -229,7 +229,7 @@ func (r *BlockReader) ReadOneByte() byte {
 // of fixed-size values.
 // Bytes read from r are decoded using the specified byte order
 // and written to successive fields of the data.
-func (r *BlockReader) ReadInt(order binary.ByteOrder, data interface{}) {
+func (r *SimpleReader) ReadInt(order binary.ByteOrder, data interface{}) {
 	if r.err != nil {
 		return
 	}
@@ -237,14 +237,14 @@ func (r *BlockReader) ReadInt(order binary.ByteOrder, data interface{}) {
 	err := binary.Read(r.rb, order, data)
 	if err != nil {
 		r.err = NewOpError(err,
-			"BlockReader.ReadInt")
+			"SimpleReader.ReadInt")
 		return
 	}
 }
 
 // ReadBytes reads the next len(s) bytes from the inner buffer to s.
 // If the buffer has no data to return, an OpError would be stored in r.err.
-func (r *BlockReader) ReadBytes(s []byte) {
+func (r *SimpleReader) ReadBytes(s []byte) {
 	if r.err != nil {
 		return
 	}
@@ -252,20 +252,20 @@ func (r *BlockReader) ReadBytes(s []byte) {
 	n, err := r.rb.Read(s)
 	if err != nil {
 		r.err = NewOpError(err,
-			"BlockReader.ReadBytes")
+			"SimpleReader.ReadBytes")
 		return
 	}
 
 	if n != len(s) {
 		r.err = NewOpError(fmt.Errorf("ReadBytes reads %d bytes, not equal to %d we expected", n, len(s)),
-			"BlockWriter.ReadBytes")
+			"SimpleWriter.ReadBytes")
 		return
 	}
 }
 
 // ReadCString read bytes from packerReader's inner buffer,
 // it would trim the tail-zero byte and the bytes after that.
-func (r *BlockReader) ReadCString(length int) []byte {
+func (r *SimpleReader) ReadCString(length int) []byte {
 	if r.err != nil {
 		return nil
 	}
@@ -274,13 +274,13 @@ func (r *BlockReader) ReadCString(length int) []byte {
 	n, err := r.rb.Read(tmp)
 	if err != nil {
 		r.err = NewOpError(err,
-			"BlockReader.ReadCString")
+			"SimpleReader.ReadCString")
 		return nil
 	}
 
 	if n != length {
 		r.err = NewOpError(fmt.Errorf("ReadCString reads %d bytes, not equal to %d we expected", n, length),
-			"BlockWriter.ReadCString")
+			"SimpleWriter.ReadCString")
 		return nil
 	}
 
@@ -293,7 +293,7 @@ func (r *BlockReader) ReadCString(length int) []byte {
 }
 
 // Error return the inner err.
-func (r *BlockReader) Error() error {
+func (r *SimpleReader) Error() error {
 	if r.err != nil {
 		return r.err
 	}
