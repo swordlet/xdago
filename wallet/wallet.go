@@ -3,7 +3,7 @@ package wallet
 import (
 	"crypto/rand"
 	"encoding/binary"
-	"github.com/tendermint/crypto/bcrypt"
+	"errors"
 	"github.com/tyler-smith/go-bip32"
 	"github.com/tyler-smith/go-bip39"
 	"io/ioutil"
@@ -46,9 +46,13 @@ func NewWallet(config *config.Config) Wallet {
 }
 
 func (w *Wallet) Exists() bool {
-	w.RLock()
-	defer w.RUnlock()
-	return len(w.file) > 0
+	_, err := os.Stat(w.file)
+	if errors.Is(err, os.ErrNotExist) {
+		return false
+	} else if err == nil {
+		return true
+	}
+	return false
 }
 
 func (w *Wallet) Delete() error {
@@ -103,7 +107,7 @@ func (w *Wallet) UnlockWallet(password string) bool {
 			if r.Error() != nil {
 				log.Crit("parse wallet salt failed", log.Ctx{"err": r.Error().Error()})
 			}
-			key, err := bcrypt.GenerateFromPassword(salt, []byte(password), BCRYPT_COST)
+			key, err := crypto.GenerateFromPassword(salt, []byte(password), BCRYPT_COST)
 			if err != nil {
 				log.Crit("generate wallet Decrypt key failed", log.Ctx{"err": err.Error()})
 			}
@@ -126,6 +130,7 @@ func (w *Wallet) UnlockWallet(password string) bool {
 			log.Crit("wallet version error")
 		}
 	}
+	//w.password = password
 	return false
 }
 
@@ -174,7 +179,7 @@ func (w *Wallet) readHdSeed(key []byte, r *utils.SimpleReader) {
 	w.mnemonicPhrase = string(r2.ReadCString(int(size)))
 	r2.ReadInt(binary.BigEndian, &w.nextAccountIndex)
 	if r2.Error() != nil {
-		log.Crit("parse wallet salt failed", log.Ctx{"err": r2.Error().Error()})
+		log.Crit("parse wallet mnemonic failed", log.Ctx{"err": r2.Error().Error()})
 	}
 }
 
@@ -207,7 +212,7 @@ func (w *Wallet) Flush() bool {
 	salt := make([]byte, SALT_LENGTH)
 	rand.Read(salt)
 	writeBytes(salt, wr)
-	key, err := bcrypt.GenerateFromPassword(salt, []byte(w.password), BCRYPT_COST)
+	key, err := crypto.GenerateFromPassword(salt, []byte(w.password), BCRYPT_COST)
 	if err != nil {
 		log.Crit("generate wallet encrypt key failed", log.Ctx{"err": err.Error()})
 	}
@@ -243,7 +248,7 @@ func (w *Wallet) IsUnLocked() bool {
 }
 
 func (w *Wallet) requireUnlocked() {
-	if w.IsLocked() {
+	if w.password == "" {
 		log.Crit("wallet is locked")
 	}
 }
@@ -349,6 +354,14 @@ func (w *Wallet) ChangePassword(newPassword string) {
 	w.requireUnlocked()
 
 	w.password = newPassword
+}
+
+func (w *Wallet) GetPassword() string {
+	w.RLock()
+	defer w.RUnlock()
+	w.requireUnlocked()
+
+	return w.password
 }
 
 func readBytes(r *utils.SimpleReader) []byte {
