@@ -107,13 +107,18 @@ func (w *Wallet) UnlockWallet(password string) bool {
 			if r.Error() != nil {
 				log.Crit("parse wallet salt failed", log.Ctx{"err": r.Error().Error()})
 			}
-			key, err := crypto.GenerateFromPassword(salt, []byte(password), BCRYPT_COST)
-			if err != nil {
+			key, keyErr := crypto.GenerateFromPassword(salt, []byte(password), BCRYPT_COST)
+			if keyErr != nil {
 				log.Crit("generate wallet Decrypt key failed", log.Ctx{"err": err.Error()})
 			}
-			newAccounts := readAccounts(key, r, true, version)
-
-			w.readHdSeed(key, r)
+			newAccounts, readErr := readAccounts(key, r, true, version)
+			if readErr != nil {
+				return false
+			}
+			success := w.readHdSeed(key, r)
+			if !success {
+				return false
+			}
 			if r.Error() != nil {
 				log.Crit("parse wallet private keys failed", log.Ctx{"err": r.Error().Error()})
 			}
@@ -124,17 +129,15 @@ func (w *Wallet) UnlockWallet(password string) bool {
 				w.accountsKey = append(w.accountsKey, account)
 				w.accountsHash = append(w.accountsHash, crypto.ToBytesAddress(account))
 			}
-			w.password = password
-			return true
 		default:
 			log.Crit("wallet version error")
 		}
 	}
-	//w.password = password
-	return false
+	w.password = password
+	return true
 }
 
-func readAccounts(key []byte, r *utils.SimpleReader, vlq bool, version uint32) []*secp256k1.PrivateKey {
+func readAccounts(key []byte, r *utils.SimpleReader, vlq bool, version uint32) ([]*secp256k1.PrivateKey, error) {
 	var keys []*secp256k1.PrivateKey
 	var total uint32
 	r.ReadInt(binary.BigEndian, &total)
@@ -142,12 +145,13 @@ func readAccounts(key []byte, r *utils.SimpleReader, vlq bool, version uint32) [
 		iv := readBytes(r)
 		pvKeyBytes, err := crypto.AesDecrypt(readBytes(r), key, iv)
 		if err != nil {
-			log.Crit("decrypt wallet private key failed", log.Ctx{"err": err.Error()})
+			log.Error("decrypt wallet private key failed", log.Ctx{"err": err.Error()})
+			return nil, err
 		}
 		privateKey := secp256k1.PrivKeyFromBytes(pvKeyBytes)
 		keys = append(keys, privateKey)
 	}
-	return keys
+	return keys, nil
 }
 
 func (w *Wallet) writeAccounts(key []byte, wr *utils.SimpleWriter) {
@@ -164,11 +168,12 @@ func (w *Wallet) writeAccounts(key []byte, wr *utils.SimpleWriter) {
 	}
 }
 
-func (w *Wallet) readHdSeed(key []byte, r *utils.SimpleReader) {
+func (w *Wallet) readHdSeed(key []byte, r *utils.SimpleReader) bool {
 	iv := readBytes(r)
 	decryptBites, err := crypto.AesDecrypt(readBytes(r), key, iv)
 	if err != nil {
-		log.Crit("decrypt wallet hd seed failed", log.Ctx{"err": err.Error()})
+		log.Error("decrypt wallet hd seed failed", log.Ctx{"err": err.Error()})
+		return false
 	}
 
 	r2 := utils.NewSimpleReader(decryptBites)
@@ -178,6 +183,7 @@ func (w *Wallet) readHdSeed(key []byte, r *utils.SimpleReader) {
 	if r2.Error() != nil {
 		log.Crit("parse wallet mnemonic failed", log.Ctx{"err": r2.Error().Error()})
 	}
+	return true
 }
 
 func (w *Wallet) writeHdSeed(key []byte, wr *utils.SimpleWriter) {
@@ -318,10 +324,6 @@ func (w *Wallet) AddAccounts(newKeys []*secp256k1.PrivateKey) {
 }
 
 func (w *Wallet) RemoveAccountByKey(delKey *secp256k1.PrivateKey) bool {
-	w.Lock()
-	defer w.Unlock()
-	w.requireUnlocked()
-
 	return w.RemoveAccountByAddress(crypto.ToBytesAddress(delKey))
 }
 
@@ -412,10 +414,6 @@ func size2bytes(size uint32) []byte {
 // ================
 
 func (w *Wallet) IsHdWalletInitialized() bool {
-	w.RLock()
-	defer w.RUnlock()
-	w.requireUnlocked()
-
 	return w.mnemonicPhrase != ""
 }
 
@@ -428,9 +426,6 @@ func (w *Wallet) InitializeHdWallet(mnemonic string) {
 
 //GetSeed Returns the HD seed.
 func (w *Wallet) GetSeed() []byte {
-	w.RLock()
-	defer w.RUnlock()
-
 	return bip39.NewSeed(w.mnemonicPhrase, MNEMONIC_PASS_PHRASE)
 }
 
@@ -446,6 +441,7 @@ func (w *Wallet) AddAccountWithNextHdKey() *secp256k1.PrivateKey {
 	seed := w.GetSeed()
 	masterKey, _ := bip32.NewMasterKey(seed)
 	bip44Key := generateBip44Key(masterKey, w.nextAccountIndex)
+	w.nextAccountIndex += 1
 	key := secp256k1.PrivKeyFromBytes(bip44Key.Key)
 	address := crypto.ToBytesAddress(key)
 	w.accountsKey = append(w.accountsKey, key)
