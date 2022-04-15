@@ -8,7 +8,6 @@ require (
 	github.com/linxGnu/grocksdb v1.6.48
 	github.com/magiconair/properties v1.8.5
 	github.com/spf13/viper v1.10.1
-	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15
 	github.com/tyler-smith/go-bip32 v1.0.0
 	github.com/tyler-smith/go-bip39 v1.1.0
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5

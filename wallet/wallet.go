@@ -172,10 +172,7 @@ func (w *Wallet) readHdSeed(key []byte, r *utils.SimpleReader) {
 	}
 
 	r2 := utils.NewSimpleReader(decryptBites)
-	sizeBytes := make([]byte, 4)
-	var size uint32
-	r2.ReadBytes(sizeBytes)
-	size = bytes2Size(sizeBytes)
+	size := bytes2Size(r2)
 	w.mnemonicPhrase = string(r2.ReadCString(int(size)))
 	r2.ReadInt(binary.BigEndian, &w.nextAccountIndex)
 	if r2.Error() != nil {
@@ -365,10 +362,7 @@ func (w *Wallet) GetPassword() string {
 }
 
 func readBytes(r *utils.SimpleReader) []byte {
-	sizeBytes := make([]byte, 4)
-	var size uint32
-	r.ReadBytes(sizeBytes)
-	size = bytes2Size(sizeBytes)
+	size := bytes2Size(r)
 	out := make([]byte, size)
 	r.ReadBytes(out)
 	return out
@@ -379,14 +373,13 @@ func writeBytes(b []byte, w *utils.SimpleWriter) {
 	w.WriteBytes(size2bytes(size))
 	w.WriteBytes(b)
 }
-func bytes2Size(bytes []byte) uint32 {
-	if len(bytes) != 4 {
-		log.Crit("wallet get size error", log.Ctx{"length": len(bytes)})
-	}
+
+func bytes2Size(r *utils.SimpleReader) uint32 {
 	var size uint32
-	for _, b := range bytes {
-		size = (size << 7) | uint32(b&0x7f)
-		if b&0x80 == 0 {
+	for i := 0; i < 4; i++ {
+		b := r.ReadOneByte()
+		size = (size << 7) | uint32(b&0x7F)
+		if (b & 0x80) == 0 {
 			break
 		}
 	}
@@ -395,17 +388,23 @@ func bytes2Size(bytes []byte) uint32 {
 
 func size2bytes(size uint32) []byte {
 	var b [4]byte
+	i := 3
+	b[i] = byte(size & 0x7f)
+	size = size >> 7
 
-	for i := 4; i > 0; i-- {
-		b[i-1] = byte(size & 0x7f)
+	for size > 0 {
+		i -= 1
+		b[i] = byte(size & 0x7f)
 		size = size >> 7
 	}
-	for i, e := range b {
+	c := i
+	for i < 4 {
 		if i != 3 {
-			b[i] = e | 0x80
+			b[i] = b[i] | 0x80
 		}
+		i += 1
 	}
-	return b[:]
+	return b[c:]
 }
 
 // ================
