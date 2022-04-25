@@ -249,7 +249,7 @@ func (bs *BlockStore) updateSum(key string, sum, size, index uint64) {
 	bs.putSums(key, sums)
 }
 
-func (bs BlockStore) LoadSum(startTime, endTime uint64, sums []byte) int {
+func (bs *BlockStore) LoadSum(startTime, endTime uint64, sums []byte) int {
 	endTime -= startTime
 	if endTime == 0 || endTime&(endTime-1) != 0 {
 		return -1
