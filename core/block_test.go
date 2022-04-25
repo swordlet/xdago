@@ -141,8 +141,8 @@ func TestGenerateBlock(t *testing.T) {
 	var links01 []Address
 	links01 = append(links01, AddressFromAmount(tx01.GetHashLow(), common.XDAG_FIELD_IN, 10<<24)) // key1
 	links01 = append(links01, AddressFromAmount(tx02.GetHashLow(), common.XDAG_FIELD_OUT, 10<<24))
-	var keys01 []secp256k1.PublicKey
-	keys01 = append(keys01, *privKey01.PubKey())
+	var keys01 []*secp256k1.PublicKey
+	keys01 = append(keys01, privKey01.PubKey())
 	transaction01 := NewBlock(cfg, time, links01, nil, false, keys01, "", 0)
 	// 跟输入用的同一把密钥
 	transaction01.SignOut(privKey01)
@@ -153,8 +153,8 @@ func TestGenerateBlock(t *testing.T) {
 	var links02 []Address
 	links02 = append(links02, AddressFromAmount(tx01.GetHashLow(), common.XDAG_FIELD_IN, 10<<24)) // key1
 	links02 = append(links02, AddressFromAmount(tx02.GetHashLow(), common.XDAG_FIELD_OUT, 10<<24))
-	var keys02 []secp256k1.PublicKey
-	keys02 = append(keys02, *privKey01.PubKey())
+	var keys02 []*secp256k1.PublicKey
+	keys02 = append(keys02, privKey01.PubKey())
 	transaction02 := NewBlock(cfg, time, links02, nil, false, keys02, "", -1)
 	// 跟输入用的不是同一把密钥
 	privKey03, _ := secp256k1.GeneratePrivateKey()
@@ -168,9 +168,9 @@ func TestGenerateBlock(t *testing.T) {
 	links03 = append(links03, AddressFromAmount(tx01.GetHashLow(), common.XDAG_FIELD_IN, 10<<24)) // key1
 	links03 = append(links03, AddressFromAmount(tx02.GetHashLow(), common.XDAG_FIELD_IN, 10<<24))
 	links03 = append(links03, AddressFromAmount(main.GetHashLow(), common.XDAG_FIELD_IN, 20<<24))
-	var keys03 []secp256k1.PublicKey
-	keys03 = append(keys03, *privKey01.PubKey())
-	keys03 = append(keys03, *privKey02.PubKey())
+	var keys03 []*secp256k1.PublicKey
+	keys03 = append(keys03, privKey01.PubKey())
+	keys03 = append(keys03, privKey02.PubKey())
 	transaction03 := NewBlock(cfg, time, links03, nil, false, keys03, "", -1)
 	// 跟输入用的不是同一把密钥
 	transaction03.SignIn(privKey01)
@@ -204,7 +204,7 @@ func canUseInput(transaction *Block, input []*Block) bool {
 
 		for _, key := range keys {
 			hash := crypto.HashTwice(utils.MergeBytes(subData[:], key.SerializeCompressed()))
-			if !crypto.EcdsaVerify(&key, hash[:], inBlock.OutSig[:32], inBlock.OutSig[32:]) {
+			if !crypto.EcdsaVerify(key, hash[:], inBlock.OutSig[:32], inBlock.OutSig[32:]) {
 				return false
 			}
 		}
