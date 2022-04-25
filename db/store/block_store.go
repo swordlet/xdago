@@ -420,7 +420,7 @@ func (bs *BlockStore) SetSnapshotBoot() {
 	bs.indexSource.Put([]byte{common.SNAPSHOT_BOOT}, b[:])
 }
 
-func (bs BlockStore) SavePreSeed(preSeed []byte) {
+func (bs *BlockStore) SavePreSeed(preSeed []byte) {
 	bs.indexSource.Put([]byte{common.SNAPSHOT_PRESEED}, preSeed)
 }
 
