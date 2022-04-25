@@ -22,7 +22,7 @@ type Block struct {
 	TransportHeader     uint64
 	Inputs              []Address                            //区块的links 列表 输入输出
 	Outputs             []Address                            //ouput包含pretop
-	PubKeys             []secp256k1.PublicKey                //记录公钥
+	PubKeys             []*secp256k1.PublicKey               //记录公钥
 	InSigs              [][common.XDAG_FIELD_SIZE*2 + 1]byte // last byte is signature field index in block
 	OutSig              common.Signature
 	Nonce               common.Field //主块的nonce记录矿工地址跟nonce
@@ -31,6 +31,10 @@ type Block struct {
 	PreTopCandidateDiff *big.Int
 	//IsOurs            bool
 	//encoded           []byte
+}
+
+func (b *Block) Info() *BlockInfo {
+	return b.info
 }
 
 func (b *Block) SetXdagBlock(xdagBlock *XdagBlock) {
@@ -42,7 +46,7 @@ func (b Block) IsEmpty() bool {
 }
 
 func NewBlock(config *config.Config, timestamp uint64, links []Address, pending []Address,
-	mining bool, keys []secp256k1.PublicKey, remark string, defKeyIndex int) Block {
+	mining bool, keys []*secp256k1.PublicKey, remark string, defKeyIndex int) Block {
 	b := Block{
 		Parsed: true,
 		info: &BlockInfo{
@@ -117,8 +121,8 @@ func NewBlock(config *config.Config, timestamp uint64, links []Address, pending 
 	return b
 }
 
-func NewBlockFromInfo(info *BlockInfo) Block {
-	return Block{
+func NewBlockFromInfo(info *BlockInfo) *Block {
+	return &Block{
 		info:    info,
 		IsSaved: true,
 		Parsed:  true,
@@ -272,7 +276,7 @@ func (b *Block) Parse() {
 			if err != nil {
 				log.Crit("parse public key error", log.Ctx{"err": err.Error()})
 			}
-			b.PubKeys = append(b.PubKeys, *pubKey)
+			b.PubKeys = append(b.PubKeys, pubKey)
 			break
 		case common.XDAG_FIELD_SIGN_IN, common.XDAG_FIELD_SIGN_OUT:
 			if firtSigIndex == 0 {
@@ -326,12 +330,12 @@ func (b *Block) sign(key *secp256k1.PrivateKey, typ common.FieldType) {
 	}
 }
 
-func (b Block) VerifiedKeys() (res []secp256k1.PublicKey) {
+func (b Block) VerifiedKeys() (res []*secp256k1.PublicKey) {
 	for _, sig := range b.InSigs {
 		digest := b.GetSubRawData(int(sig[64]))
 		for _, pubkey := range b.PubKeys {
 			hash := crypto.HashTwice(utils.MergeBytes(digest[:], pubkey.SerializeCompressed()))
-			if crypto.EcdsaVerify(&pubkey, hash[:], sig[:32], sig[32:64]) {
+			if crypto.EcdsaVerify(pubkey, hash[:], sig[:32], sig[32:64]) {
 				res = append(res, pubkey)
 			}
 		}
@@ -339,7 +343,7 @@ func (b Block) VerifiedKeys() (res []secp256k1.PublicKey) {
 	digest := b.GetSubRawData(b.GetOutsigIndex())
 	for _, pubkey := range b.PubKeys {
 		hash := crypto.HashTwice(utils.MergeBytes(digest[:], pubkey.SerializeCompressed()))
-		if crypto.EcdsaVerify(&pubkey, hash[:], b.OutSig[:32], b.OutSig[32:]) {
+		if crypto.EcdsaVerify(pubkey, hash[:], b.OutSig[:32], b.OutSig[32:]) {
 			res = append(res, pubkey)
 		}
 	}
