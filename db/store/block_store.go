@@ -81,9 +81,8 @@ func getOurKey(index int32, hashLow []byte) []byte {
 }
 
 func getHeight(height uint64) []byte {
-	var b [8]byte
-	binary.BigEndian.PutUint64(b[:], height)
-	return utils.MergeBytes([]byte{common.BLOCK_HEIGHT}, b[:])
+	return utils.MergeBytes([]byte{common.BLOCK_HEIGHT},
+		utils.U64ToBytes(height, binary.BigEndian))
 }
 
 func getOurIndex(key []byte) int32 {
