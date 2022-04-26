@@ -1,5 +1,7 @@
 package utils
 
+import "encoding/binary"
+
 func KeyStartWith(source, prefix []byte) bool {
 	if len(prefix) > len(source) {
 		return false
@@ -31,4 +33,10 @@ func Copy2(src []byte) []byte {
 	dst := make([]byte, len(src))
 	copy(dst, src)
 	return dst
+}
+
+func U64ToBytes(u uint64, order binary.ByteOrder) []byte {
+	var b [8]byte
+	order.PutUint64(b[:], u)
+	return b[:]
 }

@@ -44,7 +44,7 @@ func AddressFromBlock(block Block) Address {
 	adr.HashLow = block.GetHashLow()
 	return adr
 }
-func AddressFromType(data [32]byte, typ common.FieldType) Address {
+func AddressFromType(data common.Field, typ common.FieldType) Address {
 	if data == common.EmptyField {
 		log.Crit("address from type, zero hash low")
 	}
@@ -56,7 +56,7 @@ func AddressFromType(data [32]byte, typ common.FieldType) Address {
 	return adr
 }
 
-func AddressFromAmount(hashLow [32]byte, typ common.FieldType, amount uint64) Address {
+func AddressFromAmount(hashLow common.Hash, typ common.FieldType, amount uint64) Address {
 	if hashLow == common.EmptyHash {
 		log.Crit("address from amount, zero hash low")
 	}
