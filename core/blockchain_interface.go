@@ -7,18 +7,18 @@ import (
 
 type IBlockchain interface {
 	GetPreSeed() common.Hash
-	TryToConnect(block Block) ImportResult
-	CreateNewBlock(pairs map[Address]*secp256k1.PrivateKey, to []Address, mining bool, remark string) Block
-	GetBlockByHash(hash common.Hash, isRaw bool) Block
-	GetBlockByHeight(height uint64) Block
+	TryToConnect(block *Block) ImportResult
+	CreateNewBlock(pairs map[Address]*secp256k1.PrivateKey, to []Address, mining bool, remark string) *Block
+	GetBlockByHash(hash common.Hash, isRaw bool) *Block
+	GetBlockByHeight(height uint64) *Block
 	CheckNewMain()
-	ListMainBlock(count int) []Block
-	ListMinedBlock(count int) []Block
+	ListMainBlock(count int) []*Block
+	ListMinedBlock(count int) []*Block
 	GetMemOurBlocks() map[common.Hash]int
-	GetXDAGStats() XDAGStats
-	GetXDAGTopStatus() XDAGTopStatus
+	GetXDAGStats() *XDAGStats
+	GetXDAGTopStatus() *XDAGTopStatus
 	GetSupply(nMain uint64) uint64
-	GetBlockByTime(startTime, endTime uint64) []Block
+	GetBlockByTime(startTime, endTime uint64) []*Block
 
 	//TODO:补充单元测试
 

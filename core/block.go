@@ -41,12 +41,8 @@ func (b *Block) SetXdagBlock(xdagBlock *XdagBlock) {
 	b.xdagBlock = xdagBlock
 }
 
-func (b Block) IsEmpty() bool {
-	return b.info.Timestamp == 0
-}
-
 func NewBlock(config *config.Config, timestamp uint64, links []Address, pending []Address,
-	mining bool, keys []*secp256k1.PublicKey, remark string, defKeyIndex int) Block {
+	mining bool, keys []*secp256k1.PublicKey, remark string, defKeyIndex int) *Block {
 	b := Block{
 		Parsed: true,
 		info: &BlockInfo{
@@ -118,7 +114,7 @@ func NewBlock(config *config.Config, timestamp uint64, links []Address, pending 
 		b.setType(common.XDAG_FIELD_SIGN_IN, common.MAX_LINKS)
 	}
 
-	return b
+	return &b
 }
 
 func NewBlockFromInfo(info *BlockInfo) *Block {
@@ -129,12 +125,12 @@ func NewBlockFromInfo(info *BlockInfo) *Block {
 	}
 }
 
-func NewBlockFromXdag(b *XdagBlock) Block {
+func NewBlockFromXdag(b *XdagBlock) *Block {
 	block := Block{
 		xdagBlock: b,
 	}
 	block.Parse()
-	return block
+	return &block
 }
 
 func (b *Block) GetHashLow() common.Hash {

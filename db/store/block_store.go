@@ -77,8 +77,7 @@ func GetTimeKey(timestamp uint64, hashLow []byte) []byte {
 func getOurKey(index int32, hashLow []byte) []byte {
 	var b [4]byte
 	binary.BigEndian.PutUint32(b[:], uint32(index))
-	key := utils.MergeBytes([]byte{common.TIME_HASH_INFO}, b[:])
-	return utils.MergeBytes(key, hashLow)
+	return utils.MergeBytes([]byte{common.OURS_BLOCK_INFO}, b[:], hashLow)
 }
 
 func getHeight(height uint64) []byte {
@@ -238,7 +237,7 @@ func (bs *BlockStore) updateSum(key string, sum, size, index uint64) {
 	if sums == nil {
 		sums = make([]byte, 4096)
 	} else {
-		data := sums[16*int(index) : 17*int(index)]
+		data := sums[16*int(index) : 16*int(index+1)]
 		sum += binary.LittleEndian.Uint64(data[:8])
 		size += binary.LittleEndian.Uint64(data[8:])
 	}
@@ -249,10 +248,10 @@ func (bs *BlockStore) updateSum(key string, sum, size, index uint64) {
 	bs.putSums(key, sums)
 }
 
-func (bs *BlockStore) LoadSum(startTime, endTime uint64, sums []byte) int {
+func (bs *BlockStore) LoadSum(startTime, endTime uint64) ([]byte, int) {
 	endTime -= startTime
 	if endTime == 0 || endTime&(endTime-1) != 0 {
-		return -1
+		return nil, -1
 	}
 
 	var level int
@@ -274,14 +273,13 @@ func (bs *BlockStore) LoadSum(startTime, endTime uint64, sums []byte) int {
 	}
 
 	buf := bs.getSums(key)
+	sums := make([]byte, 256, 256)
 	if buf == nil {
-		sums = make([]byte, len(sums), len(sums))
-		return 1
+		return sums, 1
 	}
 
 	var sum, size uint64
 	if level&1 != 0 {
-		sums = make([]byte, len(sums), len(sums))
 		for i := 0; i < 256; i++ {
 			totalSum := binary.LittleEndian.Uint64(buf[i*16 : i*16+8])
 			sum += totalSum
@@ -298,7 +296,7 @@ func (bs *BlockStore) LoadSum(startTime, endTime uint64, sums []byte) int {
 		index := int((startTime >> (level + 4) * 4) & 0xf0)
 		copy(sums[:256], buf[index*16:index*16+256])
 	}
-	return 1
+	return sums, 1
 }
 
 func (bs *BlockStore) SaveBlockInfo(info *core.BlockInfo) {
@@ -343,7 +341,7 @@ func (bs *BlockStore) getBlocksByTime(startTime uint64) []*core.Block {
 		// 1 + 8 : prefix + time
 		hash := h[9:41]
 		block := bs.GetBlockByHash(hash, true)
-		if !block.IsEmpty() {
+		if block != nil {
 			blocks = append(blocks, block)
 		}
 		//fmt.Println(hex.EncodeToString(bytes))
@@ -369,8 +367,8 @@ func (bs *BlockStore) GetBlockByHash(hashLow []byte, isRaw bool) *core.Block {
 
 func (bs *BlockStore) GetRawBlockByHash(hashLow []byte) *core.Block {
 	block := bs.GetBlockInfoByHash(hashLow)
-	if block.IsEmpty() {
-		return block
+	if block == nil {
+		return nil
 	}
 	rawData := bs.blockSource.Get(hashLow)
 	if rawData == nil {
@@ -396,7 +394,8 @@ func (bs *BlockStore) GetBlockInfoByHash(hashLow []byte) *core.Block {
 	if value == nil {
 		return nil
 	}
-	err := binary.Read(bytes.NewBuffer(value), binary.LittleEndian, &info)
+	dec := gob.NewDecoder(bytes.NewBuffer(value))
+	err := dec.Decode(&info)
 	if err != nil {
 		log.Error("can't deserialize block info data", log.Ctx{"info": hex.EncodeToString(value), "err": err.Error()})
 		return nil

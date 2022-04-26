@@ -100,7 +100,7 @@ func TestGenerateBlock(t *testing.T) {
 		"0000000000000000000000000000000000000000000000000000000000000000"
 	blockRawData, _ := hex.DecodeString(blockStrData)
 	block01 := NewBlockFromXdag(NewXdagBlock(blockRawData))
-	printBlockInfo(&block01)
+	printBlockInfo(block01)
 
 	fmt.Println(
 		"=====================================first block use key1========================================")
@@ -113,7 +113,7 @@ func TestGenerateBlock(t *testing.T) {
 	privKey01, _ := secp256k1.GeneratePrivateKey()
 	tx01.SignOut(privKey01)
 
-	printBlockInfo(&tx01)
+	printBlockInfo(tx01)
 
 	fmt.Println(
 		"=====================================second block use key2========================================")
@@ -122,7 +122,7 @@ func TestGenerateBlock(t *testing.T) {
 	privKey02, _ := secp256k1.GeneratePrivateKey()
 	tx02.SignOut(privKey02)
 
-	printBlockInfo(&tx02)
+	printBlockInfo(tx02)
 
 	fmt.Println(
 		"=====================================main block use key2========================================")
@@ -134,7 +134,7 @@ func TestGenerateBlock(t *testing.T) {
 	var minShare [32]byte
 	rand.Read(minShare[:])
 	main.Nonce = minShare
-	printBlockInfo(&main)
+	printBlockInfo(main)
 
 	fmt.Println(
 		"=====================================transaction1 block use key1========================================")
@@ -146,7 +146,7 @@ func TestGenerateBlock(t *testing.T) {
 	transaction01 := NewBlock(cfg, time, links01, nil, false, keys01, "", 0)
 	// 跟输入用的同一把密钥
 	transaction01.SignOut(privKey01)
-	printBlockInfo(&transaction01)
+	printBlockInfo(transaction01)
 
 	fmt.Println(
 		"=====================================transaction2 block use key3========================================")
@@ -160,7 +160,7 @@ func TestGenerateBlock(t *testing.T) {
 	privKey03, _ := secp256k1.GeneratePrivateKey()
 	transaction02.SignIn(privKey01)
 	transaction02.SignOut(privKey03)
-	printBlockInfo(&transaction02)
+	printBlockInfo(transaction02)
 
 	fmt.Println(
 		"=====================================transaction3 block use key3========================================")
@@ -176,22 +176,22 @@ func TestGenerateBlock(t *testing.T) {
 	transaction03.SignIn(privKey01)
 	transaction03.SignIn(privKey02)
 	transaction03.SignOut(privKey03)
-	printBlockInfo(&transaction03)
+	printBlockInfo(transaction03)
 
 	fmt.Println(
 		"=====================================verify transaction01 sig========================================")
 
-	input := []*Block{&tx01}
-	fmt.Println("can use input?:", canUseInput(&transaction01, input))
+	input := []*Block{tx01}
+	fmt.Println("can use input?:", canUseInput(transaction01, input))
 
 	fmt.Println(
 		"=====================================verify transaction02 sig========================================")
-	fmt.Println("can use input?:", canUseInput(&transaction02, input))
+	fmt.Println("can use input?:", canUseInput(transaction02, input))
 
 	fmt.Println(
 		"=====================================verify transaction03 sig========================================")
-	input = append(input, &tx02)
-	fmt.Println("can use input?:", canUseInput(&transaction03, input))
+	input = append(input, tx02)
+	fmt.Println("can use input?:", canUseInput(transaction03, input))
 
 }
 
