@@ -25,4 +25,5 @@ type IBlockchain interface {
 	StartCheckMain()   // 启动检查主块链线程
 	StopCheckMain()    // 关闭检查主块链线程
 	RegisterListener() // 注册监听器
+	GetXdagExtStats() XdagExtStats
 }

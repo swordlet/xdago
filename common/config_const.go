@@ -37,7 +37,7 @@ const (
 
 	WALLET_FILE_NAME string = "wallet.data"
 
-	CLIENT_VERSION string = "0.4.6"
+	CLIENT_VERSION string = "0.4.7"
 
 	//同步问题 分叉高度
 	SYNC_FIX_HEIGHT uint64 = 0

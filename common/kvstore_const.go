@@ -24,5 +24,6 @@ const (
 	SNAPSHOT_BOOT      byte = 0x70
 	BLOCK_HEIGHT       byte = 0x80
 	SNAPSHOT_PRESEED   byte = 0x90
+	TX_HISTORY         byte = 0xa0
 	SUM_FILE_NAME           = "sums.dat"
 )
