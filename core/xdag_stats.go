@@ -8,7 +8,7 @@ import (
 
 type XDAGStats struct {
 	Difficulty       *big.Int
-	MaxDifficulty    *big.Int
+	maxDifficulty    *big.Int
 	NBlocks          uint64
 	TotalNBlocks     uint64
 	NMain            uint64
@@ -24,10 +24,21 @@ type XDAGStats struct {
 	OurLastBlockHash []byte
 }
 
+func (x *XDAGStats) MaxDifficulty() *big.Int {
+	return x.maxDifficulty
+}
+
+func (x *XDAGStats) SetMaxDifficulty(maxDifficulty *big.Int) {
+	if x.maxDifficulty.Cmp(maxDifficulty) < 0 {
+		x.maxDifficulty = maxDifficulty
+	}
+
+}
+
 func NewEmptyXDAGStats() *XDAGStats {
 	return &XDAGStats{
 		Difficulty:    big.NewInt(0),
-		MaxDifficulty: big.NewInt(0),
+		maxDifficulty: big.NewInt(0),
 	}
 }
 
@@ -35,7 +46,7 @@ func NewXDAGStats(maxDifficulty *big.Int, totalNBlocks, totalNMain, mainTime uin
 	totalNHosts int) *XDAGStats {
 
 	return &XDAGStats{
-		MaxDifficulty: maxDifficulty,
+		maxDifficulty: maxDifficulty,
 		TotalNBlocks:  totalNBlocks,
 		TotalNMain:    totalNMain,
 		MainTime:      mainTime,
@@ -47,9 +58,9 @@ func (x *XDAGStats) Update(remote XDAGStats) {
 	x.TotalNHosts = utils.MaxInt(x.TotalNHosts, remote.TotalNHosts)
 	x.TotalNBlocks = utils.MaxUint64(x.TotalNBlocks, remote.NBlocks)
 	x.TotalNMain = utils.MaxUint64(x.TotalNMain, remote.TotalNMain)
-	if x.MaxDifficulty != nil && remote.MaxDifficulty != nil &&
-		remote.MaxDifficulty.Cmp(x.MaxDifficulty) > 0 {
-		x.MaxDifficulty.Set(remote.MaxDifficulty)
+	if x.maxDifficulty != nil && remote.maxDifficulty != nil &&
+		remote.maxDifficulty.Cmp(x.maxDifficulty) > 0 {
+		x.maxDifficulty.Set(remote.maxDifficulty)
 	}
 }
 

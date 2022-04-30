@@ -44,3 +44,17 @@ var EmptyField Field
 var EmptyHash Hash
 var EmptyXdagSignature Signature
 var EmptyXdagBlock RawBlock
+
+type BlockType int
+
+const (
+	MAIN BlockType = iota
+	WALLET
+	TRANSACTION
+)
+
+//var BLOCK_TYPE_DESC = map[BlockType]string{
+//	MAIN:        "Main",
+//	WALLET:      "Wallet",
+//	TRANSACTION: "Transaction",
+//}

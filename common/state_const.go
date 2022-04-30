@@ -49,3 +49,5 @@ const (
 	//Waiting for transfer to complete.
 	XFER
 )
+
+const HASH_RATE_LAST_MAX_TIME = 64 * 4
