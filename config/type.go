@@ -2,6 +2,7 @@ package config
 
 import (
 	"xdago/common"
+	"xdago/crypto"
 )
 
 type Config struct {
@@ -56,8 +57,8 @@ type Config struct {
 
 	ttl          int
 	dnetKeyBytes [2048]byte
-	//Xkeys DnetKeys
-	whiteIPList []string
+	xkeys        *crypto.DnetKeys
+	whiteIPList  []string
 
 	// LibP2P spec
 	libp2pPort    int
@@ -87,6 +88,14 @@ type Config struct {
 	snapshotHeight  uint64
 	snapshotTime    uint64
 	isSnapshotJ     bool
+}
+
+func (c *Config) Xkeys() *crypto.DnetKeys {
+	return c.xkeys
+}
+
+func (c *Config) SetXkeys(xkeys *crypto.DnetKeys) {
+	c.xkeys = xkeys
 }
 
 // getter and setter

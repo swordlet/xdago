@@ -3,10 +3,13 @@ package config
 import (
 	"fmt"
 	"github.com/spf13/viper"
+	"io/ioutil"
 	"net"
 	"strconv"
 	"strings"
+	"unsafe"
 	"xdago/common"
+	"xdago/crypto"
 	"xdago/log"
 )
 
@@ -221,6 +224,32 @@ func (c *Config) changePoolPara(para string) {
 	c.fundRation, err = strconv.ParseFloat(args[8], 64)
 	if err != nil {
 		log.Crit("Illegal fund ration instruction")
+	}
+}
+
+func (c *Config) InitKeys() {
+	data, err := ioutil.ReadFile(c.dnetKeyFile)
+	if err != nil {
+		log.Crit("can not find dnet_key.bin file", log.Ctx{"err": err.Error()})
+	}
+	if len(data) != 3072 {
+		log.Crit("read dnet_key.bin file length error", log.Ctx{"length": len(data)})
+	}
+	xKeys := crypto.NewDnetKeys()
+	copy(xKeys.Prv, data[:1024])
+	copy(xKeys.Pub, data[1024:2048])
+	copy(xKeys.Sect0Encoded, data[2048:2560])
+	copy(xKeys.Sect0, data[2560:3072])
+	c.SetXkeys(xKeys)
+
+	ret := crypto.LoadDnetKeys(unsafe.Pointer(&data[0]), len(data))
+	if ret < 0 {
+		log.Crit("load dnet keys failed")
+	}
+
+	ret = crypto.DnetCryptInit()
+	if ret < 0 {
+		log.Crit("dnet crypt init failed")
 	}
 }
 
